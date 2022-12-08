@@ -23,11 +23,19 @@ province_five = 13.16
 
 EI_Rate = 1.58
 CPP_Rate = 5.70
+EI_Maximum_Deduction = 952.74
+CPP_Maximum_Deduction = 3499.80
 last_year_to_date = 0
 ############################################################################################################################################
 ############################################################################################################################################
 
 class PayStubs:
+
+    Old_ei_Calculation = 0
+    Max_Val_EI = False
+    Old_cpp_Calculation = 0
+    Max_Val_CPP = False
+
 
     def calculate_year_to_date(self, rate, hours, period_date):
         d = dateparser.parse(period_date)
@@ -68,57 +76,65 @@ class PayStubs:
     def federal_income_tax_calculator(self, gross_pay):
         if gross_pay < 50197:
             amount = self.percentage(federal_first, gross_pay)
-            return amount
+            return amount , federal_first
         elif gross_pay > 50197 and gross_pay < 100392:
             amount = self.percentage(federal_second, gross_pay)
-            return amount
+            return amount , federal_second
         elif gross_pay > 100392 and gross_pay < 155625:
             amount = self.percentage(federal_three, gross_pay)
-            return amount
+            return amount , federal_three
         elif gross_pay > 155625 and gross_pay < 221708:
             amount = self.percentage(federal_four, gross_pay)
-            return amount
+            return amount , federal_four
         elif gross_pay > 221708:
             amount = self.percentage(federal_five, gross_pay)
-            return amount
+            return amount , federal_five
 
 
     def province_income_tax_calculator(self, gross_pay):
         if gross_pay < 46226:
             amount = self.percentage(province_first, gross_pay)
-            return amount
+            return amount , province_first
         elif gross_pay >= 46227 and gross_pay <= 92454:
             amount = self.percentage(province_second, gross_pay)
-            return amount
+            return amount , province_second
         elif gross_pay >= 92455 and gross_pay <= 150000:
             amount = self.percentage(province_three, gross_pay)
-            return amount
+            return amount , province_three
         elif gross_pay >= 150001 and gross_pay <= 220000:
             amount = self.percentage(province_four, gross_pay)
-            return amount
+            return amount , province_four
         elif gross_pay > 220000:
             amount = self.percentage(province_five, gross_pay)
-            return amount
+            return amount , province_five
 
-    def total_incom_tax_calculator_period(self, gross_pay):
-        fed_in_tax = self.federal_income_tax_calculator(gross_pay)
-        prov_in_tax = self.province_income_tax_calculator(gross_pay)
-        total_income_tax = fed_in_tax + prov_in_tax
+    def total_incom_tax_calculator_period(self, gross_pay, total_percentage_for_monthly):
+        # fed_in_tax = self.federal_income_tax_calculator(gross_pay)
+        # prov_in_tax = self.province_income_tax_calculator(gross_pay)
+        # total_income_tax = fed_in_tax + prov_in_tax
+        total_income_tax = self.percentage(total_percentage_for_monthly, gross_pay)
         return total_income_tax
 
     def total_incom_tax_calculator_year_to_date(self, y_to_d):
-        fed_in_tax = self.federal_income_tax_calculator(y_to_d)
-        prov_in_tax = self.province_income_tax_calculator(y_to_d)
+        fed_in_tax, percentage_fed = self.federal_income_tax_calculator(y_to_d)
+        prov_in_tax, percentage_prov = self.province_income_tax_calculator(y_to_d)
         total_income_tax = fed_in_tax + prov_in_tax
-        return total_income_tax
+        total_percentage_for_monthly =  percentage_fed + percentage_prov
+        return total_income_tax , total_percentage_for_monthly
 
     def EI_calculator_year_to_date(self, y_t_d_pay):
-        amount =  self.percentage(EI_Rate, y_t_d_pay)
-        return amount
+        if self.percentage(EI_Rate, y_t_d_pay) >= EI_Maximum_Deduction:
+            return EI_Maximum_Deduction
+        else:
+            amount =  self.percentage(EI_Rate, y_t_d_pay)
+            return amount
 
     def CPP_Calculator_year_to_date(self, y_t_d_pay):
-        amount =  self.percentage(CPP_Rate, y_t_d_pay)
-        return amount
+        if self.percentage(CPP_Rate, y_t_d_pay) >= CPP_Maximum_Deduction:
+            return CPP_Maximum_Deduction
+        else:
+            amount =  self.percentage(CPP_Rate, y_t_d_pay)
+            return amount
 
     def jaugard_function(self, pay):
         netpay = pay.split(".")
@@ -126,13 +142,31 @@ class PayStubs:
         netpay[-1] = str(mod)
         return ".".join(netpay)
 
-    def EI_calculator_Period(self, gross_total):
-        amount =  self.percentage(EI_Rate, gross_total)
-        return amount
+    def EI_calculator_Period(self, gross_total, Ei_calculator_y_t_d):
+        if Ei_calculator_y_t_d >= EI_Maximum_Deduction:
+            amount = EI_Maximum_Deduction - self.Old_ei_Calculation
+            if self.Max_Val_EI == True:
+                return 0
+            else:
+                self.Max_Val_EI = True    
+                return amount
+        else:
+            self.Old_ei_Calculation = Ei_calculator_y_t_d
+            amount =  self.percentage(EI_Rate, gross_total)
+            return amount
 
-    def CPP_Calculator_Period(self, gross_total):
-        amount = self.percentage(CPP_Rate, gross_total)
-        return amount
+    def CPP_Calculator_Period(self, gross_total, CPP_Calculator_y_t_d):
+        if CPP_Calculator_y_t_d >= CPP_Maximum_Deduction:
+            amount = CPP_Maximum_Deduction - self.Old_cpp_Calculation
+            if self.Max_Val_CPP == True:
+                return 0
+            else:
+                self.Max_Val_CPP = True    
+                return amount
+        else:
+            self.Old_cpp_Calculation = CPP_Calculator_y_t_d
+            amount = self.percentage(CPP_Rate, gross_total)
+            return amount
 
     def making_two_zer_dec(self, num):
         a = num.split(".")
@@ -198,7 +232,9 @@ class PayStubs:
 
 
 if __name__ == '__main__':
+
     pay_sub_object = PayStubs()
+    
     print("***************************")
     print("***************************")
     name = input('Please enter Employee name: ')
@@ -241,7 +277,7 @@ if __name__ == '__main__':
                 last_year_to_date = year_to_date
 
             y_t_date_input = pay_sub_object.return_float(year_to_date)
-            year_to_date_incom_tax = pay_sub_object.total_incom_tax_calculator_year_to_date(y_t_date_input)
+            year_to_date_incom_tax , total_percentage_for_monthly = pay_sub_object.total_incom_tax_calculator_year_to_date(y_t_date_input)
             year_to_date_ei = pay_sub_object.EI_calculator_year_to_date(y_t_date_input)
             year_to_date_cpp = pay_sub_object.CPP_Calculator_year_to_date(y_t_date_input)
             
@@ -249,13 +285,13 @@ if __name__ == '__main__':
             print("***************************")
             print("***************************")
 
-            income_tax = pay_sub_object.total_incom_tax_calculator_period(gross_total)
-            Ei_tax = pay_sub_object.EI_calculator_Period(gross_total)
-            cpp_tax = pay_sub_object.CPP_Calculator_Period(gross_total)
+            income_tax = pay_sub_object.total_incom_tax_calculator_period(gross_total , total_percentage_for_monthly)
+            Ei_tax = pay_sub_object.EI_calculator_Period(gross_total, year_to_date_ei)
+            cpp_tax = pay_sub_object.CPP_Calculator_Period(gross_total, year_to_date_cpp)
             net_pay = gross_total - income_tax - Ei_tax - cpp_tax
             round_pay = round(net_pay, 2)
             f_net_pay = f"{round_pay:,}"
-            f_net_pay = pay_sub_object.jaugard_function(f_net_pay)
+            # f_net_pay = pay_sub_object.jaugard_function(f_net_pay)
             
             pay_sub_object.making_pdf_file(name, employee_address, hours, rate, employer_name, employer_address_1, 
                 employer_address_2, gross_total, account_number, year_to_date, f_period_ending_date, pay_date, i, income_tax,
