@@ -107,17 +107,104 @@ class PayStubs:
         elif gross_pay > 220000:
             amount = self.percentage(province_five, gross_pay)
             return amount , province_five
+    
+    def federal_income_tax_calculator_y_t_d(self, gross_pay):
+        if gross_pay < 50197:
+            amount = self.percentage(federal_first, gross_pay)
+            return amount , federal_first
+        elif gross_pay > 50197 and gross_pay < 100392:
+            first_amount = 50197
+            second_amount = gross_pay - 50197
+            first_amount_cal = self.percentage(federal_first, first_amount)
+            second_amount_cal = self.percentage(federal_second, second_amount)
+            total_amount = first_amount_cal + second_amount_cal
+            return total_amount , federal_second
+        elif gross_pay > 100392 and gross_pay < 155625:
+            first_amount = 50197
+            second_amount = 50195
+            third_amount = gross_pay - 100392
+            first_amount_cal = self.percentage(federal_first, first_amount)
+            second_amount_cal = self.percentage(federal_second, second_amount)
+            third_amount_cal = self.percentage(federal_three, third_amount)
+            total_amount = first_amount_cal + second_amount_cal + third_amount_cal
+            return total_amount , federal_three
+        elif gross_pay > 155625 and gross_pay < 221708:
+            first_amount = 50197
+            second_amount = 50195
+            third_amount = 55233
+            fourth_amount = gross_pay - 155625
+            first_amount_cal = self.percentage(federal_first, first_amount)
+            second_amount_cal = self.percentage(federal_second, second_amount)
+            third_amount_cal = self.percentage(federal_three, third_amount)
+            fourth_amount_cal = self.percentage(federal_four, fourth_amount)
+            total_amount = first_amount_cal + second_amount_cal + third_amount_cal + fourth_amount_cal
+            return total_amount , federal_four
+        elif gross_pay > 221708:
+            first_amount = 50197
+            second_amount = 50195
+            third_amount = 55233
+            fourth_amount = 66083
+            fifth_amount = gross_pay - 221708
+            first_amount_cal = self.percentage(federal_first, first_amount)
+            second_amount_cal = self.percentage(federal_second, second_amount)
+            third_amount_cal = self.percentage(federal_three, third_amount)
+            fourth_amount_cal = self.percentage(federal_four, fourth_amount)
+            fifth_amount_cal = self.percentage(federal_five, fifth_amount)
+            total_amount = first_amount_cal + second_amount_cal + third_amount_cal + fourth_amount_cal + fifth_amount_cal
+            return total_amount , federal_five
+            
+    def province_income_tax_calculator_y_t_d(self, gross_pay):
+        if gross_pay < 46226:
+            amount = self.percentage(province_first, gross_pay)
+            return amount , province_first
+        elif gross_pay >= 46227 and gross_pay <= 92454:
+            first_amount = 46226
+            second_amount = gross_pay - first_amount
+            first_amount_cal = self.percentage(province_first, first_amount)
+            second_amount_cal = self.percentage(province_second, second_amount)
+            total_amount = first_amount_cal + second_amount_cal
+            return total_amount , province_second
+        elif gross_pay >= 92455 and gross_pay <= 150000:
+            first_amount = 46226
+            second_amount = 46229
+            third_amount = gross_pay - 92455
+            first_amount_cal = self.percentage(province_first, first_amount)
+            second_amount_cal = self.percentage(province_second, second_amount)
+            third_amount_cal = self.percentage(province_three, third_amount)
+            total_amount = first_amount_cal + second_amount_cal + third_amount_cal
+            return total_amount , province_three
+        elif gross_pay >= 150001 and gross_pay <= 220000:
+            first_amount = 46226
+            second_amount = 46229
+            third_amount = 57546
+            fourth_amount = gross_pay - 150001
+            first_amount_cal = self.percentage(province_first, first_amount)
+            second_amount_cal = self.percentage(province_second, second_amount)
+            third_amount_cal = self.percentage(province_three, third_amount)
+            fourth_amount_cal = self.percentage(province_four , fourth_amount)
+            total_amount =  first_amount_cal + second_amount_cal + third_amount_cal + fourth_amount_cal
+            return total_amount , province_four
+        elif gross_pay > 220000:
+            first_amount = 46226
+            second_amount = 46229
+            third_amount = 57546
+            fourth_amount = 69999
+            fifth_amount = gross_pay - 220000
+            first_amount_cal = self.percentage(province_first, first_amount)
+            second_amount_cal = self.percentage(province_second, second_amount)
+            third_amount_cal = self.percentage(province_three, third_amount)
+            fourth_amount_cal = self.percentage(province_four , fourth_amount)
+            fifth_amount_cal = self.percentage(province_five, fifth_amount)
+            total_amount =  first_amount_cal + second_amount_cal + third_amount_cal + fourth_amount_cal + fifth_amount_cal
+            return total_amount , province_five
 
     def total_incom_tax_calculator_period(self, gross_pay, total_percentage_for_monthly):
-        # fed_in_tax = self.federal_income_tax_calculator(gross_pay)
-        # prov_in_tax = self.province_income_tax_calculator(gross_pay)
-        # total_income_tax = fed_in_tax + prov_in_tax
         total_income_tax = self.percentage(total_percentage_for_monthly, gross_pay)
         return total_income_tax
 
     def total_incom_tax_calculator_year_to_date(self, y_to_d):
-        fed_in_tax, percentage_fed = self.federal_income_tax_calculator(y_to_d)
-        prov_in_tax, percentage_prov = self.province_income_tax_calculator(y_to_d)
+        fed_in_tax, percentage_fed = self.federal_income_tax_calculator_y_t_d(y_to_d)
+        prov_in_tax, percentage_prov = self.province_income_tax_calculator_y_t_d(y_to_d)
         total_income_tax = fed_in_tax + prov_in_tax
         total_percentage_for_monthly =  percentage_fed + percentage_prov
         return total_income_tax , total_percentage_for_monthly
@@ -233,14 +320,14 @@ class PayStubs:
 
 if __name__ == '__main__':
 
-    pay_sub_object = PayStubs()
-    
     print("***************************")
     print("***************************")
     name = input('Please enter Employee name: ')
     print("***************************")
     print("***************************")
     employee_address = input("Please enter Employee address: ")
+
+    pay_sub_object = PayStubs() 
     print("***************************")
     print("***************************")
     employer_name = input("Please enter Employer name: ")
@@ -253,9 +340,7 @@ if __name__ == '__main__':
     rate = float(input("Please enter the rate which you decided: "))
     print("***************************")
     print("***************************")
-    
     account_number = randrange(1000, 9999)
-
     number_of_pay_stubs = input("Please enter, how many number of paystubs you want to create: ")
     if int(number_of_pay_stubs) == 0:
         print("You have enterd 0. So i am not creating any paystub. Thanks")
@@ -275,7 +360,6 @@ if __name__ == '__main__':
                 year_to_date = pay_sub_object.return_float(last_year_to_date) + gross_total
                 year_to_date = pay_sub_object.comma_seprated(year_to_date)
                 last_year_to_date = year_to_date
-
             y_t_date_input = pay_sub_object.return_float(year_to_date)
             year_to_date_incom_tax , total_percentage_for_monthly = pay_sub_object.total_incom_tax_calculator_year_to_date(y_t_date_input)
             year_to_date_ei = pay_sub_object.EI_calculator_year_to_date(y_t_date_input)
