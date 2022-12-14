@@ -6,10 +6,15 @@ import random
 from random import randrange
 import sys
 import os
-import comtypes.client
+from docx2pdf import convert
+# import comtypes.client
 
+# PayStub Variables
 ###########################################################################################################################################
 ###########################################################################################################################################
+###########################################################################################################################################
+###########################################################################################################################################
+
 federal_first = 15
 province_first = 5.05
 federal_second = 20.5
@@ -26,6 +31,9 @@ CPP_Rate = 5.70
 EI_Maximum_Deduction = 952.74
 CPP_Maximum_Deduction = 3499.80
 last_year_to_date = 0
+
+############################################################################################################################################
+############################################################################################################################################
 ############################################################################################################################################
 ############################################################################################################################################
 
@@ -63,14 +71,10 @@ class PayStubs:
 
 
     def convert_to_pdf(self, filename):
-        wdFormatPDF = 17
+        new_filename = filename + ".pdf"
         in_file = os.path.abspath("Output_File.docx")
-        out_file = os.path.abspath(filename)
-        word = comtypes.client.CreateObject('Word.Application')
-        doc = word.Documents.Open(in_file)
-        doc.SaveAs(out_file, FileFormat=wdFormatPDF)
-        doc.Close()
-        word.Quit()
+        out_file = os.path.abspath(new_filename)
+        convert(in_file, out_file)
 
 
     def federal_income_tax_calculator(self, gross_pay):
@@ -316,7 +320,175 @@ class PayStubs:
         except:
             print("Error in Removing File.")
         return
+    
+    def paystub_wrapper(self, name , employee_address):
+        # pay_sub_object = PayStubs() 
+        print("***************************")
+        print("***************************")
+        employer_name = input("Please enter Employer name: ")
+        print("***************************")
+        print("***************************")
+        employer_address_1 = input("Please enter Employer Address 1: ")
+        print("***************************")
+        print("***************************")
+        employer_address_2 = input("Please enter Employer Adress 2: ")
+        rate = float(input("Please enter the rate which you decided: "))
+        print("***************************")
+        print("***************************")
+        account_number = randrange(1000, 9999)
+        number_of_pay_stubs = input("Please enter, how many number of paystubs you want to create: ")
+        if int(number_of_pay_stubs) == 0:
+            print("You have enterd 0. So i am not creating any paystub. Thanks")
+            sys.exit()
+        elif int(number_of_pay_stubs) > 0:
+            for i in range(int(number_of_pay_stubs)):
+                period_ending_date = input("Please Enter Period for Paystub: ")
+                f_period_ending_date = self.parse_and_make_date(period_ending_date)
+                print("***************************")
+                print("***************************")
+                hours = random.randint(75,80)
+                gross_total = hours * rate
+                if i == 0:
+                    year_to_date = self.calculate_year_to_date(rate, hours, period_ending_date)
+                    last_year_to_date = year_to_date
+                elif i > 0:
+                    year_to_date = self.return_float(last_year_to_date) + gross_total
+                    year_to_date = self.comma_seprated(year_to_date)
+                    last_year_to_date = year_to_date
+                y_t_date_input = self.return_float(year_to_date)
+                year_to_date_incom_tax , total_percentage_for_monthly = self.total_incom_tax_calculator_year_to_date(y_t_date_input)
+                year_to_date_ei = self.EI_calculator_year_to_date(y_t_date_input)
+                year_to_date_cpp = self.CPP_Calculator_year_to_date(y_t_date_input)
+                
+                pay_date = input("Please enter pay date: ")
+                print("***************************")
+                print("***************************")
 
+                income_tax = self.total_incom_tax_calculator_period(gross_total , total_percentage_for_monthly)
+                Ei_tax = self.EI_calculator_Period(gross_total, year_to_date_ei)
+                cpp_tax = self.CPP_Calculator_Period(gross_total, year_to_date_cpp)
+                net_pay = gross_total - income_tax - Ei_tax - cpp_tax
+                round_pay = round(net_pay, 2)
+                f_net_pay = f"{round_pay:,}"
+                # f_net_pay = pay_sub_object.jaugard_function(f_net_pay)
+                
+                self.making_pdf_file(name, employee_address, hours, rate, employer_name, employer_address_1, 
+                    employer_address_2, gross_total, account_number, year_to_date, f_period_ending_date, pay_date, i, income_tax,
+                    Ei_tax, cpp_tax, f_net_pay, year_to_date_incom_tax, year_to_date_ei, year_to_date_cpp)
+
+#######################################################################################################################################
+#######################################################################################################################################
+#######################################################################################################################################
+#######################################################################################################################################
+
+class Proof_Of_SIN:
+    
+    def making_address(self, address):
+        address_list = address.split(" ")
+        middle = int(len(address_list)/2)
+        address_1 = address_list[:middle]
+        address_2 = address_list[middle:]
+        address_1_f = " ".join(address_1)
+        address_2_f = " ".join(address_2)
+        return address_1_f, address_2_f
+
+    def convert_to_pdf(self, filename):
+        new_filename = filename + ".pdf"
+        in_file = os.path.abspath("Output_File_SIN.docx")
+        out_file = os.path.abspath(new_filename)
+        convert(in_file, out_file)
+    
+    def making_fist_last_name(self, name):
+        name_list = name.split(" ")
+        first_name = name_list[:1]
+        last_name = name_list[1:]
+        first_name = "".join(first_name)
+        last_name = " ".join(last_name)
+        return first_name, last_name
+    
+    def making_sin(self, sin_number):
+        sin_1 = sin_number[:3]
+        sin_2 = sin_number[3:6]
+        sin_3 = sin_number[6:]
+        return sin_1, sin_2, sin_3
+
+    def making_sin_pdf_file(self, name_i, employee_address_i, sin_number_i):
+        address_1, address_2 = self.making_address(employee_address_i)
+        first_name, last_name = self.making_fist_last_name(name_i)
+        sin1, sin2, sin3 = self.making_sin(sin_number_i)
+        template = "Proof_Of_SIN.docx"
+        document = MailMerge(template)
+        document.merge(sin_name = str(name_i),
+        address_1_sin = str(address_1),
+        address_2_sin = str(address_2),
+        first_name = str(first_name),
+        last_name = str(last_name),
+        sin_no_1 = str(sin1),
+        sin_no_2 = str(sin2),
+        sin_no_3 = str(sin3), 
+        )
+        document.write('Output_File_SIN.docx')
+        self.convert_to_pdf(f"Proof_Of_SIN")
+        try:
+            os.remove(os.path.abspath("Output_File_SIN.docx"))
+        except:
+            print("Error in Removing File.")
+        return
+
+    def SIN_Wrapper(self, name, employee_address):
+        print("*************************************")
+        print("*************************************")
+        sin_number = str(input("Please Enter SIN Number: "))
+        print("*************************************")
+        print("*************************************")
+        self.making_sin_pdf_file(name, employee_address, sin_number)
+
+
+class TFour:
+
+    def making_address(self, address):
+        address_list = address.split(" ")
+        middle = int(len(address_list)/2)
+        address_1 = address_list[:middle]
+        address_2 = address_list[middle:]
+        address_1_f = " ".join(address_1)
+        address_2_f = " ".join(address_2)
+        return address_1_f, address_2_f
+    
+    def convert_to_pdf(self, filename):
+        new_filename = filename + ".pdf"
+        in_file = os.path.abspath("Output_File_SIN.docx")
+        out_file = os.path.abspath(new_filename)
+        convert(in_file, out_file)
+    
+    def making_sin(self, sin_number):
+        sin_1 = sin_number[:3]
+        sin_2 = sin_number[3:6]
+        sin_3 = sin_number[6:]
+        return sin_1, sin_2, sin_3
+    
+    def making_fist_last_name(self, name):
+        name_list = name.split(" ")
+        first_name = name_list[:1]
+        last_name = name_list[1:]
+        first_name = "".join(first_name)
+        last_name = " ".join(last_name)
+        return first_name, last_name
+
+    
+    def T4_Wrapper(self, name, employee_address):
+        print("*************************************")
+        print("*************************************")
+        sin_number = str(input("Please Enter SIN Number: "))
+        print("*************************************")
+        print("*************************************")
+        self.making_sin_pdf_file(name, employee_address, sin_number)
+    
+
+#######################################################################################################################################
+#######################################################################################################################################
+#######################################################################################################################################
+#######################################################################################################################################
 
 if __name__ == '__main__':
 
@@ -327,57 +499,26 @@ if __name__ == '__main__':
     print("***************************")
     employee_address = input("Please enter Employee address: ")
 
-    pay_sub_object = PayStubs() 
     print("***************************")
     print("***************************")
-    employer_name = input("Please enter Employer name: ")
+    document_type = input(''' Please Enter Which Document You want to Create, Select Options 
+                         1 ) PayStub 
+                         2 ) Proof Of SIN 
+                         3 ) PayStub and Proof Of SIN  
+                    ''')
     print("***************************")
     print("***************************")
-    employer_address_1 = input("Please enter Employer Address 1: ")
-    print("***************************")
-    print("***************************")
-    employer_address_2 = input("Please enter Employer Adress 2: ")
-    rate = float(input("Please enter the rate which you decided: "))
-    print("***************************")
-    print("***************************")
-    account_number = randrange(1000, 9999)
-    number_of_pay_stubs = input("Please enter, how many number of paystubs you want to create: ")
-    if int(number_of_pay_stubs) == 0:
-        print("You have enterd 0. So i am not creating any paystub. Thanks")
-        sys.exit()
-    elif int(number_of_pay_stubs) > 0:
-        for i in range(int(number_of_pay_stubs)):
-            period_ending_date = input("Please Enter Period for Paystub: ")
-            f_period_ending_date = pay_sub_object.parse_and_make_date(period_ending_date)
-            print("***************************")
-            print("***************************")
-            hours = random.randint(75,80)
-            gross_total = hours * rate
-            if i == 0:
-                year_to_date = pay_sub_object.calculate_year_to_date(rate, hours, period_ending_date)
-                last_year_to_date = year_to_date
-            elif i > 0:
-                year_to_date = pay_sub_object.return_float(last_year_to_date) + gross_total
-                year_to_date = pay_sub_object.comma_seprated(year_to_date)
-                last_year_to_date = year_to_date
-            y_t_date_input = pay_sub_object.return_float(year_to_date)
-            year_to_date_incom_tax , total_percentage_for_monthly = pay_sub_object.total_incom_tax_calculator_year_to_date(y_t_date_input)
-            year_to_date_ei = pay_sub_object.EI_calculator_year_to_date(y_t_date_input)
-            year_to_date_cpp = pay_sub_object.CPP_Calculator_year_to_date(y_t_date_input)
-            
-            pay_date = input("Please enter pay date: ")
-            print("***************************")
-            print("***************************")
+    
+    if int(document_type) == 1:
+        pay_sub_object = PayStubs()
+        pay_sub_object.paystub_wrapper(name, employee_address)
+    elif int(document_type) == 2:
+        sin_object = Proof_Of_SIN()
+        sin_object.SIN_Wrapper(name, employee_address)
+    elif int(document_type) == 3:
+        pay_sub_object = PayStubs()
+        sin_object = Proof_Of_SIN()
+        pay_sub_object.paystub_wrapper(name, employee_address)
+        sin_object.SIN_Wrapper(name, employee_address)
 
-            income_tax = pay_sub_object.total_incom_tax_calculator_period(gross_total , total_percentage_for_monthly)
-            Ei_tax = pay_sub_object.EI_calculator_Period(gross_total, year_to_date_ei)
-            cpp_tax = pay_sub_object.CPP_Calculator_Period(gross_total, year_to_date_cpp)
-            net_pay = gross_total - income_tax - Ei_tax - cpp_tax
-            round_pay = round(net_pay, 2)
-            f_net_pay = f"{round_pay:,}"
-            # f_net_pay = pay_sub_object.jaugard_function(f_net_pay)
-            
-            pay_sub_object.making_pdf_file(name, employee_address, hours, rate, employer_name, employer_address_1, 
-                employer_address_2, gross_total, account_number, year_to_date, f_period_ending_date, pay_date, i, income_tax,
-                 Ei_tax, cpp_tax, f_net_pay, year_to_date_incom_tax, year_to_date_ei, year_to_date_cpp)
-
+    
