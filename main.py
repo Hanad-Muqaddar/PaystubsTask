@@ -72,9 +72,15 @@ class PayStubs:
 
     def convert_to_pdf(self, filename):
         new_filename = filename + ".pdf"
+        # wdFormatPDF = 17
         in_file = os.path.abspath("Output_File.docx")
-        out_file = os.path.abspath(new_filename)
+        out_file = os.path.abspath("Results/"+new_filename)
         convert(in_file, out_file)
+        # word = comtypes.client.CreateObject('Word.Application')
+        # doc = word.Documents.Open(in_file)
+        # doc.SaveAs(out_file, FileFormat=wdFormatPDF)
+        # doc.Close()
+        # word.Quit()
 
 
     def federal_income_tax_calculator(self, gross_pay):
@@ -236,7 +242,7 @@ class PayStubs:
     def EI_calculator_Period(self, gross_total, Ei_calculator_y_t_d):
         if Ei_calculator_y_t_d >= EI_Maximum_Deduction:
             amount = EI_Maximum_Deduction - self.Old_ei_Calculation
-            if self.Max_Val_EI == True:
+            if self.Max_Val_EI == True or amount == EI_Maximum_Deduction:
                 return 0
             else:
                 self.Max_Val_EI = True    
@@ -249,7 +255,7 @@ class PayStubs:
     def CPP_Calculator_Period(self, gross_total, CPP_Calculator_y_t_d):
         if CPP_Calculator_y_t_d >= CPP_Maximum_Deduction:
             amount = CPP_Maximum_Deduction - self.Old_cpp_Calculation
-            if self.Max_Val_CPP == True:
+            if self.Max_Val_CPP == True or amount == CPP_Maximum_Deduction:
                 return 0
             else:
                 self.Max_Val_CPP = True    
@@ -284,6 +290,16 @@ class PayStubs:
         template = "Hanad-ADP-PAYSTUBS.docx"
         document = MailMerge(template)
         # print(document.get_merge_fields())
+        if Ei_tax_i == 0:
+            ei_tax_mod = "00.00"
+        else:
+            ei_tax_mod = str(self.making_two_zer_dec(self.comma_seprated(round(Ei_tax_i, 2))))
+        
+        if cpp_tax_i == 0:
+            cpp_tax_mod = "00.00"
+        else:
+            cpp_tax_mod = str(self.making_two_zer_dec(self.comma_seprated(round(cpp_tax_i, 2))))
+
         document.merge(employee_name_1=name_i, 
             emp_2 = name_i, 
             hours = str(self.making_two_zer_dec1(hours_i)), 
@@ -302,8 +318,10 @@ class PayStubs:
             y_to_d_2 = str(year_to_date),
             p_end_date = str(period_ending_date_i),
             inc_tax = str(self.making_two_zer_dec(self.comma_seprated(round(income_tax_i, 2)))),
-            ei_tax = str(self.making_two_zer_dec(self.comma_seprated(round(Ei_tax_i, 2)))),
-            cpp_tax = str(self.making_two_zer_dec(self.comma_seprated(round(cpp_tax_i, 2)))),
+
+            ei_tax = ei_tax_mod,
+            cpp_tax = cpp_tax_mod,
+
             net_pay_1 = str(self.making_two_zer_dec(net_pay_i)),
             net_pay_2 = str(self.making_two_zer_dec(net_pay_i)),
             net_pay_3 = str(self.making_two_zer_dec(net_pay_i)),
@@ -394,9 +412,15 @@ class Proof_Of_SIN:
 
     def convert_to_pdf(self, filename):
         new_filename = filename + ".pdf"
+        # wdFormatPDF = 17
         in_file = os.path.abspath("Output_File_SIN.docx")
-        out_file = os.path.abspath(new_filename)
+        out_file = os.path.abspath("Results/"+new_filename)
         convert(in_file, out_file)
+        # word = comtypes.client.CreateObject('Word.Application')
+        # doc = word.Documents.Open(in_file)
+        # doc.SaveAs(out_file, FileFormat=wdFormatPDF)
+        # doc.Close()
+        # word.Quit()
     
     def making_fist_last_name(self, name):
         name_list = name.split(" ")
@@ -457,8 +481,8 @@ class TFour:
     
     def convert_to_pdf(self, filename):
         new_filename = filename + ".pdf"
-        in_file = os.path.abspath("Output_File_SIN.docx")
-        out_file = os.path.abspath(new_filename)
+        in_file = os.path.abspath("Output_File_T4.docx")
+        out_file = os.path.abspath("Results/" + new_filename)
         convert(in_file, out_file)
     
     def making_sin(self, sin_number):
@@ -474,15 +498,168 @@ class TFour:
         first_name = "".join(first_name)
         last_name = " ".join(last_name)
         return first_name, last_name
+    
+    def comma_seprated(self, number):
+        return f"{number:,}"
+    
+    def breaking_number(self, num):
+        a = str(num).split(".")
+        if len(a) == 1:
+            before_point = a[0]
+            after_point = "00"
+            return before_point, after_point
+        before_point = a[0]
+        after_point = a[-1][:2]
+        return before_point, after_point
+    
+    def percentage(self, percent, whole):
+        return (percent * whole) / 100.0
+    
+    def EI_calculator_year_to_date(self, y_t_d_pay, EI_Rate, EI_Maximum_Deduction):
+        if self.percentage(EI_Rate, y_t_d_pay) >= EI_Maximum_Deduction:
+            return EI_Maximum_Deduction
+        else:
+            amount =  self.percentage(EI_Rate, y_t_d_pay)
+            return amount
+    
+    def CPP_Calculator_year_to_date(self, y_t_d_pay, CPP_Rate, CPP_Maximum_Deduction ):
+        if self.percentage(CPP_Rate, y_t_d_pay) >= CPP_Maximum_Deduction:
+            return CPP_Maximum_Deduction
+        else:
+            amount =  self.percentage(CPP_Rate, y_t_d_pay)
+            return amount
+    
+    def getting_eirate_and_max_deductions(self, year):
+        from Constants import EI_Rates
+        for i in EI_Rates:
+            if i['year'] == int(year):
+                return i['ei_rate'], i['max_deduction']
+    
+    def getting_cpprate_and_max_deductions(slef, year):
+        from Constants import CPP_Rates
+        for i in CPP_Rates:
+            if i['year'] == int(year):
+                return i['cpp_rate'], i['max_deduction'] 
+    
+    def getting_maximum_EI_insurable_amount(self, salary, year):
+        from Constants import Max_EI_Insureable_Income
+        year_max_income = 0
+        for i in Max_EI_Insureable_Income:
+            if i['year'] == int(year):
+                year_max_income = i['income']
+        if salary > year_max_income:
+            return year_max_income
+        elif salary <= year_max_income:
+            return salary
 
+
+    def getting_maximum_CPP_insurable_amount(self, salary, year):
+        from Constants import Max_CPP_Pensionable_Income
+        year_max_income = 0
+        for i in Max_CPP_Pensionable_Income:
+            if i['year'] == int(year):
+                year_max_income = i['income']
+        if salary > year_max_income:
+            return year_max_income
+        elif salary <= year_max_income:
+            return salary
+
+
+    def making_t4_pdf_file(self, name_i, employee_address_i, sin_number_i, t4_year_input_i, i_i, gross_salary_i ):
+        template = "T4_2021_Creations.docx"
+        document = MailMerge(template)
+        ##############################
+        address_1, address_2 = self.making_address(employee_address_i)
+        first_name, last_name = self.making_fist_last_name(name_i)
+        sin1, sin2, sin3 = self.making_sin(sin_number_i)
+        year_number = str(t4_year_input_i)[2:]
+
+        paystub_object = PayStubs()
+        income_tax, percntage = paystub_object.total_incom_tax_calculator_year_to_date(gross_salary_i)
+
+        rate, max = self.getting_eirate_and_max_deductions(t4_year_input_i)
+        t4_EI = self.EI_calculator_year_to_date(gross_salary_i, rate, max)
+
+        cpp_rate, cpp_max = self.getting_cpprate_and_max_deductions(t4_year_input_i)
+        t4_CPP = self.CPP_Calculator_year_to_date(gross_salary_i, cpp_rate, cpp_max)
+        
+        maximum_EI_amount = self.getting_maximum_EI_insurable_amount(gross_salary_i, t4_year_input_i)
+
+        maximum_cpp_amount = self.getting_maximum_CPP_insurable_amount(gross_salary_i, t4_year_input_i)
+        # befor_point_sal, after_point_sal = self.breaking_number(gross_salary_i)
+
+        document.merge(
+            t4_name_1 = str(name_i),
+            t4_name_2 = str(name_i),
+            ###################
+            t4_year = str(t4_year_input_i),
+            t4_year_1 = str(t4_year_input_i),
+            ###################
+            t4_address_1_1 = str(address_1),
+            t4_address_1_2 = str(address_1),
+            ###################
+            t4_address_2_1 = str(address_2),
+            t4_address_2_2 = str(address_2),
+            ###################
+            f_nm_1 = str(first_name),
+            f_nm_2 = str(first_name),
+            ###################
+            l_nm_1 = str(last_name),
+            l_nm_2 = str(last_name),
+            ###################
+            sn1 = str(sin1),
+            sn2 = str(sin2),
+            sn3 = str(sin3),
+            sn4 = str(sin1),
+            s5 = str(sin2),
+            s6 = str(sin3),  
+            ###################
+            yn = str(year_number),
+            y2 = str(year_number),
+            ###################
+            gross_sal = str(self.comma_seprated(round(gross_salary_i, 2))),
+            inc_tax = str(self.comma_seprated(round(income_tax, 2))),
+            t4_ei = str(self.comma_seprated(round(t4_EI, 2))),
+            t4_cpp = str(self.comma_seprated(round(t4_CPP, 2))),
+            max_ei = str(self.comma_seprated(round(maximum_EI_amount, 2))),
+            max_cpp = str(self.comma_seprated(round(maximum_cpp_amount, 2))),
+            ###################
+            gs_sal_1 = str(self.comma_seprated(round(gross_salary_i, 2))),
+            inc_tx_1 = str(self.comma_seprated(round(income_tax, 2))),
+            t4_ei_1 = str(self.comma_seprated(round(t4_EI, 2))),
+            t4_cp_1 = str(self.comma_seprated(round(t4_CPP, 2))),
+            max_ei1 = str(self.comma_seprated(round(maximum_EI_amount, 2))),
+            max_cpp1 = str(self.comma_seprated(round(maximum_cpp_amount, 2))),
+            
+        )
+        document.write(f'Results/Output_File_T4_{i_i}.docx')
+        # self.convert_to_pdf(f"T4_Document_{i_i}")
+        # try:
+        #     os.remove(os.path.abspath("Output_File_T4.docx"))
+        # except:
+        #     print("Error in Removing File.")
+        # return
     
     def T4_Wrapper(self, name, employee_address):
         print("*************************************")
         print("*************************************")
-        sin_number = str(input("Please Enter SIN Number: "))
+        number_of_documents = int(input("Please enter How many documents you want to create: "))
         print("*************************************")
         print("*************************************")
-        self.making_sin_pdf_file(name, employee_address, sin_number)
+        if number_of_documents == 0:
+            print("You have Enter 0, We are not creating any document. Thanks")
+        else:
+            for i in range(number_of_documents):
+                t4_year_input = input("Please Enter Year for T4: ")
+                print("*************************************")
+                print("*************************************")
+                sin_number = str(input("Please Enter SIN Number: "))
+                print("*************************************")
+                print("*************************************")
+                gross_salary = float(input("Please enter your gross Salary: "))
+                print("*************************************")
+                print("*************************************")
+                self.making_t4_pdf_file(name, employee_address, sin_number, t4_year_input, i, gross_salary)
     
 
 #######################################################################################################################################
@@ -505,6 +682,7 @@ if __name__ == '__main__':
                          1 ) PayStub 
                          2 ) Proof Of SIN 
                          3 ) PayStub and Proof Of SIN  
+                         4 ) T4 Document
                     ''')
     print("***************************")
     print("***************************")
@@ -520,5 +698,8 @@ if __name__ == '__main__':
         sin_object = Proof_Of_SIN()
         pay_sub_object.paystub_wrapper(name, employee_address)
         sin_object.SIN_Wrapper(name, employee_address)
+    elif int(document_type) == 4:
+        TFour_object = TFour()
+        TFour_object.T4_Wrapper(name, employee_address)
 
     
