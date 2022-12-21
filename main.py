@@ -504,7 +504,7 @@ class TFour:
     
     def breaking_number(self, num):
         a = str(num).split(".")
-        if len(a) == 1:
+        if a[-1] == '0':
             before_point = a[0]
             after_point = "00"
             return before_point, after_point
@@ -565,7 +565,7 @@ class TFour:
             return salary
 
 
-    def making_t4_pdf_file(self, name_i, employee_address_i, sin_number_i, t4_year_input_i, i_i, gross_salary_i ):
+    def making_t4_pdf_file(self, name_i, employee_address_i, sin_number_i, t4_year_input_i, i_i, gross_salary_i, employer_name_i):
         template = "T4_2021_Creations.docx"
         document = MailMerge(template)
         ##############################
@@ -586,11 +586,21 @@ class TFour:
         maximum_EI_amount = self.getting_maximum_EI_insurable_amount(gross_salary_i, t4_year_input_i)
 
         maximum_cpp_amount = self.getting_maximum_CPP_insurable_amount(gross_salary_i, t4_year_input_i)
-        # befor_point_sal, after_point_sal = self.breaking_number(gross_salary_i)
+        
+        ################################################################################################
+        
+        befor_point_gross_sal, after_point_gross_sal = self.breaking_number(gross_salary_i)
+        before_point_income_tax, after_point_income_tax = self.breaking_number(income_tax)
+        before_point_cpp, after_point_cpp = self.breaking_number(t4_CPP)
+        befor_point_ei, after_point_ei = self.breaking_number(t4_EI)
+        befor_point_max_ei, after_point_max_ei = self.breaking_number(maximum_EI_amount)
+        befor_point_max_cpp, after_point_max_cpp = self.breaking_number(maximum_cpp_amount)
+
 
         document.merge(
-            t4_name_1 = str(name_i),
-            t4_name_2 = str(name_i),
+
+            emp_name_1 = str(employer_name_i),
+            emp_name_2 = str(employer_name_i),
             ###################
             t4_year = str(t4_year_input_i),
             t4_year_1 = str(t4_year_input_i),
@@ -611,36 +621,65 @@ class TFour:
             sn2 = str(sin2),
             sn3 = str(sin3),
             sn4 = str(sin1),
-            s5 = str(sin2),
-            s6 = str(sin3),  
+            sn5 = str(sin2),
+            sn6 = str(sin3),  
             ###################
             yn = str(year_number),
             y2 = str(year_number),
             ###################
-            gross_sal = str(self.comma_seprated(round(gross_salary_i, 2))),
-            inc_tax = str(self.comma_seprated(round(income_tax, 2))),
-            t4_ei = str(self.comma_seprated(round(t4_EI, 2))),
-            t4_cpp = str(self.comma_seprated(round(t4_CPP, 2))),
-            max_ei = str(self.comma_seprated(round(maximum_EI_amount, 2))),
-            max_cpp = str(self.comma_seprated(round(maximum_cpp_amount, 2))),
+
+            grs_sal_bfr = str(self.comma_seprated(int(befor_point_gross_sal))),
+            g_af = str(after_point_gross_sal),
+
+            inc_tax_bfr = str(self.comma_seprated(int(before_point_income_tax))),
+            i_af = str(after_point_income_tax),
+
+            t4_cpp_bfr = str(self.comma_seprated(int(before_point_cpp))),
+            c_af = str(after_point_cpp),
+
+            t4_ei_bfr = str(self.comma_seprated(int(befor_point_ei))),
+            e_af = str(after_point_ei),
+
+            mx_ei_bfr = str(self.comma_seprated(int(befor_point_max_ei))),
+            d_af = str(after_point_max_ei),
+
+            mx_cp_bfr = str(self.comma_seprated(int(befor_point_max_cpp))),
+            h_af = str(after_point_max_cpp),
+
             ###################
-            gs_sal_1 = str(self.comma_seprated(round(gross_salary_i, 2))),
-            inc_tx_1 = str(self.comma_seprated(round(income_tax, 2))),
-            t4_ei_1 = str(self.comma_seprated(round(t4_EI, 2))),
-            t4_cp_1 = str(self.comma_seprated(round(t4_CPP, 2))),
-            max_ei1 = str(self.comma_seprated(round(maximum_EI_amount, 2))),
-            max_cpp1 = str(self.comma_seprated(round(maximum_cpp_amount, 2))),
-            
+            grs_sal_bfr_1 = str(self.comma_seprated(int(befor_point_gross_sal))),
+            u_af = str(after_point_gross_sal),
+
+            inc_tax_bfr_1 = str(self.comma_seprated(int(before_point_income_tax))),
+            w_af = str(after_point_income_tax),
+
+            t4_cpp_bfr_1 = str(self.comma_seprated(int(before_point_cpp))),
+            v_af = str(after_point_cpp),
+
+            t4_ei_bfr_1 = str(self.comma_seprated(int(befor_point_ei))),
+            x_af = str(after_point_ei),
+
+            max_ei_bfr_1 = str(self.comma_seprated(int(befor_point_max_ei))),
+            y_af = str(after_point_max_ei),
+
+            max_cp_bfr_1 = str(self.comma_seprated(int(befor_point_max_cpp))),
+            z_af = str(after_point_max_cpp),
         )
-        document.write(f'Results/Output_File_T4_{i_i}.docx')
-        # self.convert_to_pdf(f"T4_Document_{i_i}")
-        # try:
-        #     os.remove(os.path.abspath("Output_File_T4.docx"))
-        # except:
-        #     print("Error in Removing File.")
-        # return
+        document.write(f'Output_File_T4.docx')
+        self.convert_to_pdf(f"T4_Document_{i_i}")
+        try:
+            os.remove(os.path.abspath("Output_File_T4.docx"))
+        except:
+            print("Error in Removing File.")
+        return
     
     def T4_Wrapper(self, name, employee_address):
+        print("*************************************")
+        print("*************************************")
+        sin_number = str(input("Please Enter SIN Number: "))
+        print("*************************************")
+        print("*************************************")
+        employer_name = input("Please Enter Employer Name: ")
         print("*************************************")
         print("*************************************")
         number_of_documents = int(input("Please enter How many documents you want to create: "))
@@ -650,16 +689,15 @@ class TFour:
             print("You have Enter 0, We are not creating any document. Thanks")
         else:
             for i in range(number_of_documents):
+                print("*************************************")
+                print("*************************************")
                 t4_year_input = input("Please Enter Year for T4: ")
-                print("*************************************")
-                print("*************************************")
-                sin_number = str(input("Please Enter SIN Number: "))
                 print("*************************************")
                 print("*************************************")
                 gross_salary = float(input("Please enter your gross Salary: "))
                 print("*************************************")
                 print("*************************************")
-                self.making_t4_pdf_file(name, employee_address, sin_number, t4_year_input, i, gross_salary)
+                self.making_t4_pdf_file(name, employee_address, sin_number, t4_year_input, i, gross_salary, employer_name)
     
 
 #######################################################################################################################################
@@ -681,8 +719,9 @@ if __name__ == '__main__':
     document_type = input(''' Please Enter Which Document You want to Create, Select Options 
                          1 ) PayStub 
                          2 ) Proof Of SIN 
-                         3 ) PayStub and Proof Of SIN  
-                         4 ) T4 Document
+                         3 ) T4 Document
+                         4 ) PayStub and Proof Of SIN 
+                         5 ) All 3
                     ''')
     print("***************************")
     print("***************************")
@@ -694,12 +733,21 @@ if __name__ == '__main__':
         sin_object = Proof_Of_SIN()
         sin_object.SIN_Wrapper(name, employee_address)
     elif int(document_type) == 3:
+        TFour_object = TFour()
+        TFour_object.T4_Wrapper(name, employee_address)
+    elif int(document_type) == 4:
         pay_sub_object = PayStubs()
         sin_object = Proof_Of_SIN()
         pay_sub_object.paystub_wrapper(name, employee_address)
         sin_object.SIN_Wrapper(name, employee_address)
-    elif int(document_type) == 4:
+    elif int(document_type) == 5:
+        pay_sub_object = PayStubs()
+        sin_object = Proof_Of_SIN()
+        pay_sub_object.paystub_wrapper(name, employee_address)
+        sin_object.SIN_Wrapper(name, employee_address)
         TFour_object = TFour()
         TFour_object.T4_Wrapper(name, employee_address)
+
+    
 
     

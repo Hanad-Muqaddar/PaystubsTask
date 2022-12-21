@@ -565,8 +565,8 @@ class TFour:
             return salary
 
 
-    def making_t4_pdf_file(self, name_i, employee_address_i, sin_number_i, t4_year_input_i, i_i, gross_salary_i ):
-        template = "T4_2021_Creations.docx"
+    def making_t4_pdf_file(self, name_i, employee_address_i, sin_number_i, t4_year_input_i, i_i, gross_salary_i, employer_name_i ):
+        template = "T4_HANAD_V2.docx"
         document = MailMerge(template)
         ##############################
         address_1, address_2 = self.making_address(employee_address_i)
@@ -586,9 +586,17 @@ class TFour:
         maximum_EI_amount = self.getting_maximum_EI_insurable_amount(gross_salary_i, t4_year_input_i)
 
         maximum_cpp_amount = self.getting_maximum_CPP_insurable_amount(gross_salary_i, t4_year_input_i)
-        # befor_point_sal, after_point_sal = self.breaking_number(gross_salary_i)
+
+        befor_point_sal, after_point_sal = self.breaking_number(gross_salary_i)
 
         document.merge(
+
+            emp_name_1 = str(employer_name_i),
+    
+
+            gs_1_f = str(befor_point_sal),
+            gs_1_p = str(after_point_sal),
+            
             t4_name_1 = str(name_i),
             t4_name_2 = str(name_i),
             ###################
@@ -632,15 +640,18 @@ class TFour:
             max_cpp1 = str(self.comma_seprated(round(maximum_cpp_amount, 2))),
             
         )
-        document.write(f'Results/Output_File_T4_{i_i}.docx')
-        # self.convert_to_pdf(f"T4_Document_{i_i}")
-        # try:
-        #     os.remove(os.path.abspath("Output_File_T4.docx"))
-        # except:
-        #     print("Error in Removing File.")
-        # return
+        document.write(f'Output_File_T4.docx')
+        self.convert_to_pdf(f"T4_Document_{i_i}")
+        try:
+            os.remove(os.path.abspath("Output_File_T4.docx"))
+        except:
+            print("Error in Removing File.")
+        return
     
     def T4_Wrapper(self, name, employee_address):
+        print("*************************************")
+        print("*************************************")
+        sin_number = str(input("Please Enter SIN Number: "))
         print("*************************************")
         print("*************************************")
         number_of_documents = int(input("Please enter How many documents you want to create: "))
@@ -650,16 +661,16 @@ class TFour:
             print("You have Enter 0, We are not creating any document. Thanks")
         else:
             for i in range(number_of_documents):
+                employer_name = input("Please Enter Employer Name: ")
+                print("*************************************")
+                print("*************************************")
                 t4_year_input = input("Please Enter Year for T4: ")
-                print("*************************************")
-                print("*************************************")
-                sin_number = str(input("Please Enter SIN Number: "))
                 print("*************************************")
                 print("*************************************")
                 gross_salary = float(input("Please enter your gross Salary: "))
                 print("*************************************")
                 print("*************************************")
-                self.making_t4_pdf_file(name, employee_address, sin_number, t4_year_input, i, gross_salary)
+                self.making_t4_pdf_file(name, employee_address, sin_number, t4_year_input, i, gross_salary, employer_name)
     
 
 #######################################################################################################################################
