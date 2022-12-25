@@ -72,15 +72,9 @@ class PayStubs:
 
     def convert_to_pdf(self, filename):
         new_filename = filename + ".pdf"
-        # wdFormatPDF = 17
         in_file = os.path.abspath("Output_File.docx")
         out_file = os.path.abspath("Results/"+new_filename)
         convert(in_file, out_file)
-        # word = comtypes.client.CreateObject('Word.Application')
-        # doc = word.Documents.Open(in_file)
-        # doc.SaveAs(out_file, FileFormat=wdFormatPDF)
-        # doc.Close()
-        # word.Quit()
 
 
     def federal_income_tax_calculator(self, gross_pay):
@@ -285,7 +279,7 @@ class PayStubs:
         return f"{number:,}"
 
     def making_pdf_file(self, name_i, employee_address_i, hours_i, rate_i, employer_name_i, employer_address_1_i, 
-                                    employer_address_2_i, g_total_i, account_number_i, year_to_date,period_ending_date_i, pay_date_i, i,
+                                    employer_address_2_i, g_total_i, account_number_i, year_to_date, period_ending_date_i, pay_date_i, i,
                                     income_tax_i, Ei_tax_i, cpp_tax_i, net_pay_i, year_to_date_incom_tax_i,year_to_date_ei_i,year_to_date_cpp_i):
         template = "Hanad-ADP-PAYSTUBS.docx"
         document = MailMerge(template)
@@ -332,7 +326,11 @@ class PayStubs:
             pay_date_2 = str(pay_date_i),
         )
         document.write('Output_File.docx')
-        self.convert_to_pdf(f"PDF-ADP-PAYSTUB_{i}")
+        abcd = period_ending_date_i.replace(" ","-")
+        am = dateparser.parse(abcd, settings={'DATE_ORDER': 'DMY'})
+        s = am.strftime('%d %b %y')
+        fin = s.replace(" ", "-")
+        self.convert_to_pdf(f"PDF-ADP-PAYSTUB-{fin}_{i}")
         try:
             os.remove(os.path.abspath("Output_File.docx"))
         except:
@@ -466,6 +464,122 @@ class Proof_Of_SIN:
         print("*************************************")
         print("*************************************")
         self.making_sin_pdf_file(name, employee_address, sin_number)
+
+class Proof_Of_Enrollment:
+
+    def convert_to_pdf(self, filename):
+        new_filename = filename + ".pdf"
+        in_file = os.path.abspath("Output_File_POE.docx")
+        out_file = os.path.abspath("Results/"+new_filename)
+        convert(in_file, out_file)
+
+    def making_POE_pdf_file(self, enrollment_date_i, student_name_i, student_number_i, career_i, term_i,
+                            term_start_date_i, term_ending_date_i,faculty_i, plan_of_study_i, term_status_i, 
+                            year_in_program_i, program_length_i):
+        template = "POE.docx"
+        document = MailMerge(template)
+        document.merge(
+            enrol_date = str(enrollment_date_i),
+            student_name = str(student_name_i),
+            student_number = str(student_number_i), 
+            std_career = str(career_i),
+            std_term = str(term_i),
+            term_start_date = str(term_start_date_i),
+            term_end_date = str(term_ending_date_i),
+            faculty = str(faculty_i),
+            plan_of_study = str(plan_of_study_i),
+            term_status = str(term_status_i),
+            year_in_program = str(year_in_program_i),
+            length = str(program_length_i),
+        )
+        document.write('Output_File_POE.docx')
+        self.convert_to_pdf(f"Proof_of_Enrollment")
+        try:
+            os.remove(os.path.abspath("Output_File_POE.docx"))
+        except:
+            print("Error in Removing File.")
+        return
+
+    def pof_wrapper(self, name):
+        print("*************************************")
+        print("*************************************")
+        enrollment_date = str(input("Please Enter Enrollment Date Like (June 12, 2021): "))
+        student_name = name
+        student_number = "2512" + str(random.randint(10000,99999))
+        print("*************************************")
+        print("*************************************")
+        career_default_value = "Undergraduate"
+        career_option_input = str(input("Career Undergraduate: Yes or NO : "))
+        if career_option_input.lower() == "yes":
+            career = career_default_value
+        else:
+            career = str(input("Please Enter Career : "))
+        print("*************************************")
+        print("*************************************")
+        term_year = str(input("Please Enter the year like (2020 or 2021) :"))
+        term_first_val = str(input('''
+                            Please Select any option from these. Select Number like 1 or 2
+                            1 )  Fall/Winter
+                            2 )  Summer                             
+                            '''))
+        if int(term_first_val) == 1:
+            term_first_val = "Fall/Winter"
+        elif int(term_first_val) == 2:
+            term_first_val = "Summer"
+        term = term_year + " " + term_first_val
+        print("*************************************")
+        print("*************************************")
+        term_start_date = str(input("Please Enter Term Starting Date Like (September 9, YYYY): "))
+        print("*************************************")
+        print("*************************************")
+        term_ending_date = str(input("Please Enter Term ending date Like (April 30, YYYY): "))
+        print("*************************************")
+        print("*************************************")
+        faculty_default_value = "Faculty of Science"
+        faculty_option_input = str(input("Faculty/Program of Study : Science  Yes or NO : "))
+        if faculty_option_input.lower() == "yes":
+            faculty = faculty_default_value
+        else:
+            faculty = str(input("Please Enter Faculty/Program of Study :"))
+        print("*************************************")
+        print("*************************************")
+        plan_of_study_default_value = "Bachelor of Science Honours (4 Year)"
+        plan_of_study_input_option = str(input("Plan of Study Bachelor of Science Honours (4 Year) : YES or NO "))
+        if plan_of_study_input_option.lower() == "yes":
+            plan_of_study = plan_of_study_default_value
+        else:
+            plan_of_study = str(input("Please Enter Plan of Study : "))
+        print("*************************************")
+        print("*************************************")
+        term_status_default_value = "Full-time"
+        term_status_input_option = str(input("Term Status Full-time : YES or NO "))
+        if term_status_input_option.lower() == "yes":
+            term_status = term_status_default_value
+        else:
+            term_status = str(input("Please Enter Term Status : "))
+        print("*************************************")
+        print("*************************************")
+        year_in_program_default_value = "3"
+        year_in_program_input_value = str(input("Year in Program : 3 : YES or NO :"))
+        if year_in_program_input_value.lower() == "yes":
+            year_in_program = year_in_program_default_value
+        else:
+            year_in_program = str(input("Please Enter Year in Program : "))
+        print("*************************************")
+        print("*************************************")
+        program_length_default_value = "4"
+        program_length_input_value = str(input("Program Length is 4 : YES or NO  "))
+        if program_length_input_value.lower() == "yes":
+            program_length = program_length_default_value
+        else:
+            program_length = str(input("Please Enter Program Length : "))
+        print("*************************************")
+        print("*************************************")
+        self.making_POE_pdf_file(enrollment_date, student_name, student_number, career, term,
+                                 term_start_date, term_ending_date, faculty, plan_of_study, 
+                                 term_status, year_in_program,program_length)
+        
+
 
 
 class TFour:
@@ -666,7 +780,7 @@ class TFour:
             z_af = str(after_point_max_cpp),
         )
         document.write(f'Output_File_T4.docx')
-        self.convert_to_pdf(f"T4_Document_{i_i}")
+        self.convert_to_pdf(f"T4-{t4_year_input_i}-{i_i}")
         try:
             os.remove(os.path.abspath("Output_File_T4.docx"))
         except:
@@ -720,8 +834,9 @@ if __name__ == '__main__':
                          1 ) PayStub 
                          2 ) Proof Of SIN 
                          3 ) T4 Document
-                         4 ) PayStub and Proof Of SIN 
-                         5 ) All 3
+                         4 ) Proof Of Enrollment
+                         5 ) PayStub and Proof Of SIN 
+                         6 ) All
                     ''')
     print("***************************")
     print("***************************")
@@ -736,17 +851,22 @@ if __name__ == '__main__':
         TFour_object = TFour()
         TFour_object.T4_Wrapper(name, employee_address)
     elif int(document_type) == 4:
-        pay_sub_object = PayStubs()
-        sin_object = Proof_Of_SIN()
-        pay_sub_object.paystub_wrapper(name, employee_address)
-        sin_object.SIN_Wrapper(name, employee_address)
+        poof_of_enrl = Proof_Of_Enrollment()
+        poof_of_enrl.pof_wrapper(name,)
     elif int(document_type) == 5:
         pay_sub_object = PayStubs()
         sin_object = Proof_Of_SIN()
         pay_sub_object.paystub_wrapper(name, employee_address)
         sin_object.SIN_Wrapper(name, employee_address)
+    elif int(document_type) == 6:
+        pay_sub_object = PayStubs()
+        sin_object = Proof_Of_SIN()
         TFour_object = TFour()
+        poof_of_enrl = Proof_Of_Enrollment()
+        pay_sub_object.paystub_wrapper(name, employee_address)
+        sin_object.SIN_Wrapper(name, employee_address)
         TFour_object.T4_Wrapper(name, employee_address)
+        poof_of_enrl.pof_wrapper(name,)
 
     
 

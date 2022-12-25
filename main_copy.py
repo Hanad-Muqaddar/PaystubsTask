@@ -72,15 +72,9 @@ class PayStubs:
 
     def convert_to_pdf(self, filename):
         new_filename = filename + ".pdf"
-        # wdFormatPDF = 17
         in_file = os.path.abspath("Output_File.docx")
         out_file = os.path.abspath("Results/"+new_filename)
         convert(in_file, out_file)
-        # word = comtypes.client.CreateObject('Word.Application')
-        # doc = word.Documents.Open(in_file)
-        # doc.SaveAs(out_file, FileFormat=wdFormatPDF)
-        # doc.Close()
-        # word.Quit()
 
 
     def federal_income_tax_calculator(self, gross_pay):
@@ -285,7 +279,7 @@ class PayStubs:
         return f"{number:,}"
 
     def making_pdf_file(self, name_i, employee_address_i, hours_i, rate_i, employer_name_i, employer_address_1_i, 
-                                    employer_address_2_i, g_total_i, account_number_i, year_to_date,period_ending_date_i, pay_date_i, i,
+                                    employer_address_2_i, g_total_i, account_number_i, year_to_date, period_ending_date_i, pay_date_i, i,
                                     income_tax_i, Ei_tax_i, cpp_tax_i, net_pay_i, year_to_date_incom_tax_i,year_to_date_ei_i,year_to_date_cpp_i):
         template = "Hanad-ADP-PAYSTUBS.docx"
         document = MailMerge(template)
@@ -332,7 +326,11 @@ class PayStubs:
             pay_date_2 = str(pay_date_i),
         )
         document.write('Output_File.docx')
-        self.convert_to_pdf(f"PDF-ADP-PAYSTUB_{i}")
+        abcd = period_ending_date_i.replace(" ","-")
+        am = dateparser.parse(abcd, settings={'DATE_ORDER': 'DMY'})
+        s = am.strftime('%d %b %y')
+        fin = s.replace(" ", "-")
+        self.convert_to_pdf(f"PDF-ADP-PAYSTUB-{fin}_{i}")
         try:
             os.remove(os.path.abspath("Output_File.docx"))
         except:
@@ -467,6 +465,122 @@ class Proof_Of_SIN:
         print("*************************************")
         self.making_sin_pdf_file(name, employee_address, sin_number)
 
+class Proof_Of_Enrollment:
+
+    def convert_to_pdf(self, filename):
+        new_filename = filename + ".pdf"
+        in_file = os.path.abspath("Output_File_POE.docx")
+        out_file = os.path.abspath("Results/"+new_filename)
+        convert(in_file, out_file)
+
+    def making_POE_pdf_file(self, enrollment_date_i, student_name_i, student_number_i, career_i, term_i,
+                            term_start_date_i, term_ending_date_i,faculty_i, plan_of_study_i, term_status_i, 
+                            year_in_program_i, program_length_i):
+        template = "POE.docx"
+        document = MailMerge(template)
+        document.merge(
+            enrol_date = str(enrollment_date_i),
+            student_name = str(student_name_i),
+            student_number = str(student_number_i), 
+            std_career = str(career_i),
+            std_term = str(term_i),
+            term_start_date = str(term_start_date_i),
+            term_end_date = str(term_ending_date_i),
+            faculty = str(faculty_i),
+            plan_of_study = str(plan_of_study_i),
+            term_status = str(term_status_i),
+            year_in_program = str(year_in_program_i),
+            length = str(program_length_i),
+        )
+        document.write('Output_File_POE.docx')
+        self.convert_to_pdf(f"Proof_of_Enrollment")
+        try:
+            os.remove(os.path.abspath("Output_File_POE.docx"))
+        except:
+            print("Error in Removing File.")
+        return
+
+    def pof_wrapper(self, name):
+        print("*************************************")
+        print("*************************************")
+        enrollment_date = str(input("Please Enter Enrollment Date Like (June 12, 2021): "))
+        student_name = name
+        student_number = "2512" + str(random.randint(10000,99999))
+        print("*************************************")
+        print("*************************************")
+        career_default_value = "Undergraduate"
+        career_option_input = str(input("Career Undergraduate: Yes or NO : "))
+        if career_option_input.lower() == "yes":
+            career = career_default_value
+        else:
+            career = str(input("Please Enter Career : "))
+        print("*************************************")
+        print("*************************************")
+        term_year = str(input("Please Enter the year like (2020 or 2021) :"))
+        term_first_val = str(input('''
+                            Please Select any option from these. Select Number like 1 or 2
+                            1 )  Fall/Winter
+                            2 )  Summer                             
+                            '''))
+        if int(term_first_val) == 1:
+            term_first_val = "Fall/Winter"
+        elif int(term_first_val) == 2:
+            term_first_val = "Summer"
+        term = term_year + " " + term_first_val
+        print("*************************************")
+        print("*************************************")
+        term_start_date = str(input("Please Enter Term Starting Date Like (September 9, YYYY): "))
+        print("*************************************")
+        print("*************************************")
+        term_ending_date = str(input("Please Enter Term ending date Like (April 30, YYYY): "))
+        print("*************************************")
+        print("*************************************")
+        faculty_default_value = "Faculty of Science"
+        faculty_option_input = str(input("Faculty/Program of Study : Science  Yes or NO : "))
+        if faculty_option_input.lower() == "yes":
+            faculty = faculty_default_value
+        else:
+            faculty = str(input("Please Enter Faculty/Program of Study :"))
+        print("*************************************")
+        print("*************************************")
+        plan_of_study_default_value = "Bachelor of Science Honours (4 Year)"
+        plan_of_study_input_option = str(input("Plan of Study Bachelor of Science Honours (4 Year) : YES or NO "))
+        if plan_of_study_input_option.lower() == "yes":
+            plan_of_study = plan_of_study_default_value
+        else:
+            plan_of_study = str(input("Please Enter Plan of Study : "))
+        print("*************************************")
+        print("*************************************")
+        term_status_default_value = "Full-time"
+        term_status_input_option = str(input("Term Status Full-time : YES or NO "))
+        if term_status_input_option.lower() == "yes":
+            term_status = term_status_default_value
+        else:
+            term_status = str(input("Please Enter Term Status : "))
+        print("*************************************")
+        print("*************************************")
+        year_in_program_default_value = "3"
+        year_in_program_input_value = str(input("Year in Program : 3 : YES or NO :"))
+        if year_in_program_input_value.lower() == "yes":
+            year_in_program = year_in_program_default_value
+        else:
+            year_in_program = str(input("Please Enter Year in Program : "))
+        print("*************************************")
+        print("*************************************")
+        program_length_default_value = "4"
+        program_length_input_value = str(input("Program Length is 4 : YES or NO  "))
+        if program_length_input_value.lower() == "yes":
+            program_length = program_length_default_value
+        else:
+            program_length = str(input("Please Enter Program Length : "))
+        print("*************************************")
+        print("*************************************")
+        self.making_POE_pdf_file(enrollment_date, student_name, student_number, career, term,
+                                 term_start_date, term_ending_date, faculty, plan_of_study, 
+                                 term_status, year_in_program,program_length)
+        
+
+
 
 class TFour:
 
@@ -504,7 +618,7 @@ class TFour:
     
     def breaking_number(self, num):
         a = str(num).split(".")
-        if len(a) == 1:
+        if a[-1] == '0':
             before_point = a[0]
             after_point = "00"
             return before_point, after_point
@@ -565,8 +679,8 @@ class TFour:
             return salary
 
 
-    def making_t4_pdf_file(self, name_i, employee_address_i, sin_number_i, t4_year_input_i, i_i, gross_salary_i, employer_name_i ):
-        template = "T4_HANAD_V2.docx"
+    def making_t4_pdf_file(self, name_i, employee_address_i, sin_number_i, t4_year_input_i, i_i, gross_salary_i, employer_name_i):
+        template = "T4_2021_Creations.docx"
         document = MailMerge(template)
         ##############################
         address_1, address_2 = self.making_address(employee_address_i)
@@ -586,19 +700,21 @@ class TFour:
         maximum_EI_amount = self.getting_maximum_EI_insurable_amount(gross_salary_i, t4_year_input_i)
 
         maximum_cpp_amount = self.getting_maximum_CPP_insurable_amount(gross_salary_i, t4_year_input_i)
+        
+        ################################################################################################
+        
+        befor_point_gross_sal, after_point_gross_sal = self.breaking_number(gross_salary_i)
+        before_point_income_tax, after_point_income_tax = self.breaking_number(income_tax)
+        before_point_cpp, after_point_cpp = self.breaking_number(t4_CPP)
+        befor_point_ei, after_point_ei = self.breaking_number(t4_EI)
+        befor_point_max_ei, after_point_max_ei = self.breaking_number(maximum_EI_amount)
+        befor_point_max_cpp, after_point_max_cpp = self.breaking_number(maximum_cpp_amount)
 
-        befor_point_sal, after_point_sal = self.breaking_number(gross_salary_i)
 
         document.merge(
 
             emp_name_1 = str(employer_name_i),
-    
-
-            gs_1_f = str(befor_point_sal),
-            gs_1_p = str(after_point_sal),
-            
-            t4_name_1 = str(name_i),
-            t4_name_2 = str(name_i),
+            emp_name_2 = str(employer_name_i),
             ###################
             t4_year = str(t4_year_input_i),
             t4_year_1 = str(t4_year_input_i),
@@ -619,29 +735,52 @@ class TFour:
             sn2 = str(sin2),
             sn3 = str(sin3),
             sn4 = str(sin1),
-            s5 = str(sin2),
-            s6 = str(sin3),  
+            sn5 = str(sin2),
+            sn6 = str(sin3),  
             ###################
             yn = str(year_number),
             y2 = str(year_number),
             ###################
-            gross_sal = str(self.comma_seprated(round(gross_salary_i, 2))),
-            inc_tax = str(self.comma_seprated(round(income_tax, 2))),
-            t4_ei = str(self.comma_seprated(round(t4_EI, 2))),
-            t4_cpp = str(self.comma_seprated(round(t4_CPP, 2))),
-            max_ei = str(self.comma_seprated(round(maximum_EI_amount, 2))),
-            max_cpp = str(self.comma_seprated(round(maximum_cpp_amount, 2))),
+
+            grs_sal_bfr = str(self.comma_seprated(int(befor_point_gross_sal))),
+            g_af = str(after_point_gross_sal),
+
+            inc_tax_bfr = str(self.comma_seprated(int(before_point_income_tax))),
+            i_af = str(after_point_income_tax),
+
+            t4_cpp_bfr = str(self.comma_seprated(int(before_point_cpp))),
+            c_af = str(after_point_cpp),
+
+            t4_ei_bfr = str(self.comma_seprated(int(befor_point_ei))),
+            e_af = str(after_point_ei),
+
+            mx_ei_bfr = str(self.comma_seprated(int(befor_point_max_ei))),
+            d_af = str(after_point_max_ei),
+
+            mx_cp_bfr = str(self.comma_seprated(int(befor_point_max_cpp))),
+            h_af = str(after_point_max_cpp),
+
             ###################
-            gs_sal_1 = str(self.comma_seprated(round(gross_salary_i, 2))),
-            inc_tx_1 = str(self.comma_seprated(round(income_tax, 2))),
-            t4_ei_1 = str(self.comma_seprated(round(t4_EI, 2))),
-            t4_cp_1 = str(self.comma_seprated(round(t4_CPP, 2))),
-            max_ei1 = str(self.comma_seprated(round(maximum_EI_amount, 2))),
-            max_cpp1 = str(self.comma_seprated(round(maximum_cpp_amount, 2))),
-            
+            grs_sal_bfr_1 = str(self.comma_seprated(int(befor_point_gross_sal))),
+            u_af = str(after_point_gross_sal),
+
+            inc_tax_bfr_1 = str(self.comma_seprated(int(before_point_income_tax))),
+            w_af = str(after_point_income_tax),
+
+            t4_cpp_bfr_1 = str(self.comma_seprated(int(before_point_cpp))),
+            v_af = str(after_point_cpp),
+
+            t4_ei_bfr_1 = str(self.comma_seprated(int(befor_point_ei))),
+            x_af = str(after_point_ei),
+
+            max_ei_bfr_1 = str(self.comma_seprated(int(befor_point_max_ei))),
+            y_af = str(after_point_max_ei),
+
+            max_cp_bfr_1 = str(self.comma_seprated(int(befor_point_max_cpp))),
+            z_af = str(after_point_max_cpp),
         )
         document.write(f'Output_File_T4.docx')
-        self.convert_to_pdf(f"T4_Document_{i_i}")
+        self.convert_to_pdf(f"T4-{t4_year_input_i}-{i_i}")
         try:
             os.remove(os.path.abspath("Output_File_T4.docx"))
         except:
@@ -654,6 +793,9 @@ class TFour:
         sin_number = str(input("Please Enter SIN Number: "))
         print("*************************************")
         print("*************************************")
+        employer_name = input("Please Enter Employer Name: ")
+        print("*************************************")
+        print("*************************************")
         number_of_documents = int(input("Please enter How many documents you want to create: "))
         print("*************************************")
         print("*************************************")
@@ -661,7 +803,6 @@ class TFour:
             print("You have Enter 0, We are not creating any document. Thanks")
         else:
             for i in range(number_of_documents):
-                employer_name = input("Please Enter Employer Name: ")
                 print("*************************************")
                 print("*************************************")
                 t4_year_input = input("Please Enter Year for T4: ")
@@ -692,8 +833,10 @@ if __name__ == '__main__':
     document_type = input(''' Please Enter Which Document You want to Create, Select Options 
                          1 ) PayStub 
                          2 ) Proof Of SIN 
-                         3 ) PayStub and Proof Of SIN  
-                         4 ) T4 Document
+                         3 ) T4 Document
+                         4 ) Proof Of Enrollment
+                         5 ) PayStub and Proof Of SIN 
+                         6 ) All
                     ''')
     print("***************************")
     print("***************************")
@@ -705,12 +848,26 @@ if __name__ == '__main__':
         sin_object = Proof_Of_SIN()
         sin_object.SIN_Wrapper(name, employee_address)
     elif int(document_type) == 3:
+        TFour_object = TFour()
+        TFour_object.T4_Wrapper(name, employee_address)
+    elif int(document_type) == 4:
+        poof_of_enrl = Proof_Of_Enrollment()
+        poof_of_enrl.pof_wrapper(name,)
+    elif int(document_type) == 5:
         pay_sub_object = PayStubs()
         sin_object = Proof_Of_SIN()
         pay_sub_object.paystub_wrapper(name, employee_address)
         sin_object.SIN_Wrapper(name, employee_address)
-    elif int(document_type) == 4:
+    elif int(document_type) == 6:
+        pay_sub_object = PayStubs()
+        sin_object = Proof_Of_SIN()
         TFour_object = TFour()
+        poof_of_enrl = Proof_Of_Enrollment()
+        pay_sub_object.paystub_wrapper(name, employee_address)
+        sin_object.SIN_Wrapper(name, employee_address)
         TFour_object.T4_Wrapper(name, employee_address)
+        poof_of_enrl.pof_wrapper(name,)
+
+    
 
     
