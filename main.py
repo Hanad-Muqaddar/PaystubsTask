@@ -330,7 +330,7 @@ class PayStubs:
         am = dateparser.parse(abcd, settings={'DATE_ORDER': 'DMY'})
         s = am.strftime('%d %b %y')
         fin = s.replace(" ", "-")
-        self.convert_to_pdf(f"PDF-ADP-PAYSTUB-{fin}_{i}")
+        self.convert_to_pdf(f"PAYSTUB-{fin}_{i}")
         try:
             os.remove(os.path.abspath("Output_File.docx"))
         except:
@@ -559,12 +559,12 @@ class Proof_Of_Enrollment:
             term_status = str(input("Please Enter Term Status : "))
         print("*************************************")
         print("*************************************")
-        year_in_program_default_value = "3"
-        year_in_program_input_value = str(input("Year in Program : 3 : YES or NO :"))
-        if year_in_program_input_value.lower() == "yes":
-            year_in_program = year_in_program_default_value
-        else:
-            year_in_program = str(input("Please Enter Year in Program : "))
+        # year_in_program_default_value = "3"
+        # year_in_program_input_value = str(input("Year in Program : 3 : YES or NO :"))
+        # if year_in_program_input_value.lower() == "yes":
+        #     year_in_program = year_in_program_default_value
+        # else:
+        year_in_program = str(input("Please Enter Year in Program : "))
         print("*************************************")
         print("*************************************")
         program_length_default_value = "4"
