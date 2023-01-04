@@ -835,8 +835,7 @@ if __name__ == '__main__':
                          2 ) Proof Of SIN 
                          3 ) T4 Document
                          4 ) Proof Of Enrollment
-                         5 ) PayStub and Proof Of SIN 
-                         6 ) All
+                         5 ) All
                     ''')
     print("***************************")
     print("***************************")
@@ -856,13 +855,9 @@ if __name__ == '__main__':
     elif int(document_type) == 5:
         pay_sub_object = PayStubs()
         sin_object = Proof_Of_SIN()
-        pay_sub_object.paystub_wrapper(name, employee_address)
-        sin_object.SIN_Wrapper(name, employee_address)
-    elif int(document_type) == 6:
-        pay_sub_object = PayStubs()
-        sin_object = Proof_Of_SIN()
         TFour_object = TFour()
         poof_of_enrl = Proof_Of_Enrollment()
+        
         pay_sub_object.paystub_wrapper(name, employee_address)
         sin_object.SIN_Wrapper(name, employee_address)
         TFour_object.T4_Wrapper(name, employee_address)
