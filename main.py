@@ -559,11 +559,6 @@ class Proof_Of_Enrollment:
             term_status = str(input("Please Enter Term Status : "))
         print("*************************************")
         print("*************************************")
-        # year_in_program_default_value = "3"
-        # year_in_program_input_value = str(input("Year in Program : 3 : YES or NO :"))
-        # if year_in_program_input_value.lower() == "yes":
-        #     year_in_program = year_in_program_default_value
-        # else:
         year_in_program = str(input("Please Enter Year in Program : "))
         print("*************************************")
         print("*************************************")
@@ -814,6 +809,79 @@ class TFour:
                 self.making_t4_pdf_file(name, employee_address, sin_number, t4_year_input, i, gross_salary, employer_name)
     
 
+class TD_Document:
+
+    def ret_bank_name(self, name):
+        name = name.split(" ")
+        try:
+            bnk_1 = " ".join(name[:3])
+        except:
+            bnk_1 = ""
+        try:
+            bnk_2 = " ".join(name[3:7])
+        except:
+            bnk_2 = ""
+        try:
+            bnk_3 = " ".join(name[7:])
+        except:
+            bnk_3 = ""
+        return bnk_1, bnk_2, bnk_3
+    
+    def making_address(self, address):
+        address_list = address.split(" ")
+        middle = int(len(address_list)/2)
+        address_1 = address_list[:middle]
+        address_2 = address_list[middle:]
+        address_1_f = " ".join(address_1)
+        address_2_f = " ".join(address_2)
+        return address_1_f, address_2_f
+
+    def convert_to_pdf(self, filename):
+        new_filename = filename + ".pdf"
+        in_file = os.path.abspath("Output_File_TD.docx")
+        out_file = os.path.abspath("Results/"+new_filename)
+        convert(in_file, out_file)
+
+    def making_TD_pdf_file(self, b_1_i, b_2_i, b_3_i):
+        template = "TD_Document_Final.docx"
+        document = MailMerge(template)
+        document.merge(
+            bnk_1 = str(b_1_i),
+            bnk_2 = str(b_2_i),
+            bnk_3 = str(b_3_i),
+        
+        )
+        document.write('Output_File_TD.docx')
+        self.convert_to_pdf(f"TD_Trust")
+        try:
+            os.remove(os.path.abspath("Output_File_TD.docx"))
+        except:
+            print("Error in Removing File.")
+        return
+
+
+    def TD_wrapper(self, name, address):
+        print("*************************************")
+        print("*************************************")
+        default_bank_name = "LONDON POND MILLS 1086 COMMISSIONERS ROAD EAST LONDON, ON N5Z 4W8"
+        bank_option_input = str(input("Remain Bank name same : Yes or No : "))
+        if bank_option_input.lower() == "yes":
+            b_1, b_2, b_3 = self.ret_bank_name(default_bank_name)
+        else:
+            bank_name = str(input("Please Enter Bank Name: "))
+            b_1, b_2 , b_3 = self.ret_bank_name(bank_name)
+        
+        print("*************************************")
+        print("*************************************")
+        
+
+        print("*************************************")
+        print("*************************************")
+        
+        self.making_TD_pdf_file(b_1, b_2, b_3)
+    
+
+
 #######################################################################################################################################
 #######################################################################################################################################
 #######################################################################################################################################
@@ -835,7 +903,8 @@ if __name__ == '__main__':
                          2 ) Proof Of SIN 
                          3 ) T4 Document
                          4 ) Proof Of Enrollment
-                         5 ) All
+                         5 ) TD Document
+                         6 ) All
                     ''')
     print("***************************")
     print("***************************")
@@ -853,15 +922,20 @@ if __name__ == '__main__':
         poof_of_enrl = Proof_Of_Enrollment()
         poof_of_enrl.pof_wrapper(name,)
     elif int(document_type) == 5:
+        td_clas = TD_Document()
+        td_clas.TD_wrapper(name, employee_address)
+    elif int(document_type) == 6:
         pay_sub_object = PayStubs()
         sin_object = Proof_Of_SIN()
         TFour_object = TFour()
         poof_of_enrl = Proof_Of_Enrollment()
+        td_clas = TD_Document()
         
         pay_sub_object.paystub_wrapper(name, employee_address)
         sin_object.SIN_Wrapper(name, employee_address)
         TFour_object.T4_Wrapper(name, employee_address)
         poof_of_enrl.pof_wrapper(name,)
+        td_clas.TD_wrapper(name, employee_address)
 
     
 
