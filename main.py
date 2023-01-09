@@ -841,15 +841,48 @@ class TD_Document:
         in_file = os.path.abspath("Output_File_TD.docx")
         out_file = os.path.abspath("Results/"+new_filename)
         convert(in_file, out_file)
+    
+    def making_account_number(self, number):
+        num_1 = random.randint(100,999)
+        num_2 = random.randint(100,999)
+        account_number = f"{num_1}-{num_2}{number}"
+        return account_number
+    
+    def making_statement_from(self, input):
+        from calendar import monthrange
+        from time import strptime
+        d = input.split(" ")
+        month = d[0][:3]
+        year = d[1]
+        month_number = strptime(month,'%b').tm_mon
+        num_days = monthrange(int(year), month_number)[1]
+        ret_string = f"{month.upper()} 1/{year[2:]} - {month.upper()} {num_days}/{year[2:]}"
+        return ret_string
 
-    def making_TD_pdf_file(self, b_1_i, b_2_i, b_3_i):
+
+    def making_TD_pdf_file_for_thirty_trans(self, b_1_i, b_2_i, b_3_i, name_i, address_i, branch_number_i, account_number_i, account_type_i,
+                            statement_from_i, ):
         template = "TD_Document_Final.docx"
         document = MailMerge(template)
+        # "*************************************"
+
+        ad_1, ad_2 = self.making_address(address_i)
+        account_num = self.making_account_number(account_number_i)
+        statement_date = self.making_statement_from(statement_from_i)
+
+        # "*************************************"
         document.merge(
             bnk_1 = str(b_1_i),
             bnk_2 = str(b_2_i),
             bnk_3 = str(b_3_i),
-        
+            emp_name = str(name_i),
+            adr_1 = str(ad_1),
+            adr_2 = str(ad_2),
+            br_no = str(branch_number_i),
+            ac_no = str(account_num),
+            acc_type = str(account_type_i),
+            stmnt_date = str(statement_date),
+
         )
         document.write('Output_File_TD.docx')
         self.convert_to_pdf(f"TD_Trust")
@@ -861,24 +894,44 @@ class TD_Document:
 
 
     def TD_wrapper(self, name, address):
-        print("*************************************")
-        print("*************************************")
-        default_bank_name = "LONDON POND MILLS 1086 COMMISSIONERS ROAD EAST LONDON, ON N5Z 4W8"
-        bank_option_input = str(input("Remain Bank name same : Yes or No : "))
-        if bank_option_input.lower() == "yes":
-            b_1, b_2, b_3 = self.ret_bank_name(default_bank_name)
-        else:
-            bank_name = str(input("Please Enter Bank Name: "))
-            b_1, b_2 , b_3 = self.ret_bank_name(bank_name)
-        
-        print("*************************************")
-        print("*************************************")
-        
+        number_of_months = input("How many months you want to create for : ")
+        for i in range(int(number_of_months)):
+            print("*************************************")
+            print("*************************************")
+            default_bank_name = "LONDON POND MILLS 1086 COMMISSIONERS ROAD EAST LONDON, ON N5Z 4W8"
+            bank_option_input = str(input("Bank name will remain same : Yes or No : "))
+            if bank_option_input.lower() == "yes":
+                b_1, b_2, b_3 = self.ret_bank_name(default_bank_name)
+            else:
+                bank_name = str(input("Please Enter Bank Name: "))
+                b_1, b_2 , b_3 = self.ret_bank_name(bank_name)        
+            print("*************************************")
+            print("*************************************")
+            default_branch_no = "005110"
+            branch_number = input("Branch Number Will remain Same : Yes or No : ")
+            if branch_number.lower("yes"):
+                branch_number = default_branch_no
+            else:
+                branch_number = input("Please Enter Branch Number :")
+            print("*************************************")
+            print("*************************************")
+            account_number = input("Please Enter 4 Digit Account Number : ")
+            print("*************************************")
+            print("*************************************")
+            default_account_type = "STUDENT"
+            account_type = input("Account type will remain same : Yes or No : ")
+            if account_type.lower() == "yes":
+                account_type = default_account_type
+            else:
+                account_type = input("Please Enter account type : ")
+            print("*************************************")
+            print("*************************************")
+            statement_from = input("Please enter year and month like(feb, 2023) :")
+            print("*************************************")
+            print("*************************************")
 
-        print("*************************************")
-        print("*************************************")
-        
-        self.making_TD_pdf_file(b_1, b_2, b_3)
+
+            self.making_TD_pdf_file_for_thirty_trans(b_1, b_2, b_3, name, address,branch_number, account_number, account_type, statement_from)
     
 
 
