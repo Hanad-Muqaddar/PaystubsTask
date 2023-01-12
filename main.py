@@ -7,7 +7,8 @@ from random import randrange
 import sys
 import os
 from docx2pdf import convert
-# import comtypes.client
+from Constants import withdrawls
+from Constants import deposits
 
 # PayStub Variables
 ###########################################################################################################################################
@@ -351,7 +352,11 @@ class PayStubs:
         rate = float(input("Please enter the rate which you decided: "))
         print("***************************")
         print("***************************")
-        account_number = randrange(1000, 9999)
+        account_number = input("Last digits of bank account number XXXX : Yes or No :")
+        if account_number.lower() == "yes":
+            account_number = randrange(1000, 9999)
+        else:
+            account_number = input("Please Enter 4 digit Account Number : ")
         number_of_pay_stubs = input("Please enter, how many number of paystubs you want to create: ")
         if int(number_of_pay_stubs) == 0:
             print("You have enterd 0. So i am not creating any paystub. Thanks")
@@ -811,6 +816,8 @@ class TFour:
 
 class TD_Document:
 
+    global_starting_balance = 0
+
     def ret_bank_name(self, name):
         name = name.split(" ")
         try:
@@ -857,18 +864,144 @@ class TD_Document:
         month_number = strptime(month,'%b').tm_mon
         num_days = monthrange(int(year), month_number)[1]
         ret_string = f"{month.upper()} 1/{year[2:]} - {month.upper()} {num_days}/{year[2:]}"
-        return ret_string
+        return ret_string, num_days
+    
+
+    def starting_blnc_date(self, text):
+        data = text.split("-")[0].split("/")[0]
+        data1 = data.split(" ")
+        if len(data1[-1]) > 1:
+            return data
+        else:
+            date = f"{0}{data1[-1]}"
+            date2 = f"{data1[0]}{date}"
+            return date2
+    
+    def making_two_zer_dec(self, num):
+        a = num.split(".")
+        if len(a[-1]) == 2:
+            return ".".join(a)
+        elif len(a[-1]) == 1:
+            a[-1] = a[-1] + "0"
+            return ".".join(a)
+        elif len(a[-1]) > 2 and a[-1] != a[0]:
+            a[-1] = a[-1][:2]
+            return ".".join(a)
+        elif a[-1] == a[0]:
+            a[0] = f"{a[0]}.00"
+            return ".".join(a)
+    
+    def comma_seprated(self, number):
+        return f"{number:,}"
+    
+
+    def calPercent(self, x):
+        percent2 = 33 / 100  * x
+        percent1 = 67 / 100 * x
+        return round(percent1), round(percent2)
+    
+    def myFunc(self, e):
+        return e['Date']
+
+
+    def solving_balance_clean_function(self, dict):
+        u_values = list(set([i['Date'] for i in dict]))
+        testings = []
+        for j in u_values:
+            lst = []
+            for k in dict:
+                if k['Date'] == j:
+                    lst.append(k) 
+            testings.append(lst)
+        for test in testings:
+            if len(test) > 1:
+                for ent in range(len(test)-1):
+                    test[ent]['balance'] = ""
+        flat_list = [item for sublist in testings for item in sublist]
+        return flat_list
+
+    def adding_month(self, dict, mon):
+        for i in dict:
+            if len(str(i['Date'])) > 1:
+                old_val = i['Date']
+                i['Date'] = f"{mon}{old_val}"
+            elif len(str(i['Date'])) == 1:
+                old_val = i['Date']
+                i['Date'] = f"{mon}0{old_val}"
+        return dict
+    
+    def calculate_total_wth_drawl(self, dict):
+        total = 0
+        for j in dict:
+            if j['withdraw'] != "":
+                total  = total + float(j['withdraw'])
+        return total
+    
+    def calculate_total_deposit(self, dict):
+        total = 0
+        for j in dict:
+            if j['deposit'] != "":
+                total  = total + float(j['deposit'])
+        return total
+    
+    def making_all_transactions(self, trans, global_balance, incoming_deposits, month_days, date,):
+        withdrawls_trans, deposits_trans = self.calPercent(trans)
+        wth_drws = random.sample(withdrawls, withdrawls_trans)  
+        depos = random.sample(deposits, deposits_trans)
+        
+        all_transactions = []
+        for i in wth_drws:
+            i['Date'] = random.randint(2,month_days)
+            all_transactions.append(i)
+            
+        for j in depos:
+            j['Date'] = random.randint(2,month_days)
+            all_transactions.append(j)
+        
+        for k in incoming_deposits:
+            all_transactions.append(k)
+        
+        all_transactions.sort(key=self.myFunc)
+        
+        for tran in all_transactions:
+            if "withdraw" not in tran and "deposit" in tran:
+                payment = global_balance + float(tran['deposit'])
+                global_balance = payment
+                tran['balance'] = self.making_two_zer_dec(self.comma_seprated(float(global_balance)))
+                tran['withdraw'] = ""
+            elif "deposit" not in tran and "withdraw" in tran:
+                payment = global_balance - float(tran['withdraw'])
+                global_balance = payment
+                tran['balance'] = self.making_two_zer_dec(self.comma_seprated(float(global_balance)))
+                tran['deposit'] = ""
+
+        all_transactions = self.solving_balance_clean_function(all_transactions)
+
+        all_transactions = self.adding_month(all_transactions, date)
+
+        for i in range(30-trans):
+            all_transactions.append({'description': '','deposit': '','balance': "",'withdraw': '','Date': ""})
+        
+        return all_transactions, global_balance
+
 
 
     def making_TD_pdf_file_for_thirty_trans(self, b_1_i, b_2_i, b_3_i, name_i, address_i, branch_number_i, account_number_i, account_type_i,
-                            statement_from_i, ):
+                            statement_from_i, starting_balance_i, i_i, total_deposits_i, total_transactions_i ):
         template = "TD_Document_Final.docx"
         document = MailMerge(template)
         # "*************************************"
 
         ad_1, ad_2 = self.making_address(address_i)
         account_num = self.making_account_number(account_number_i)
-        statement_date = self.making_statement_from(statement_from_i)
+        statement_date, month_days = self.making_statement_from(statement_from_i)
+        starting_balance_dat = self.starting_blnc_date(statement_date)
+        date_to_send = starting_balance_dat[:3]
+        trans_after_final_mod, ret_balance = self.making_all_transactions(total_transactions_i, self.global_starting_balance, total_deposits_i, month_days, date_to_send )
+        self.global_starting_balance = ret_balance
+        total_with_drawl = self.calculate_total_wth_drawl(trans_after_final_mod)
+        total_depos = self.calculate_total_deposit(trans_after_final_mod)
+
 
         # "*************************************"
         document.merge(
@@ -882,10 +1015,252 @@ class TD_Document:
             ac_no = str(account_num),
             acc_type = str(account_type_i),
             stmnt_date = str(statement_date),
+            strt_bl = str(self.making_two_zer_dec(self.comma_seprated(float(starting_balance_i)))),
+            st_date = str(starting_balance_dat),
+            ttl_wth = str(self.making_two_zer_dec(self.comma_seprated(total_with_drawl))),
+            ttl_dep = str(self.making_two_zer_dec(self.comma_seprated(total_depos))),
+            # ******************************************
+            des_1 = str(trans_after_final_mod[0]['description'][:15]),
+            wth_1 = str(trans_after_final_mod[0]['withdraw']),
+            dep_1 = str(trans_after_final_mod[0]['deposit']),
+            dt_1 = str(trans_after_final_mod[0]['Date']),
+            blnc_1 = str(trans_after_final_mod[0]['balance']),
+            # *******************************************
 
+            # ******************************************
+            des_2 = str(trans_after_final_mod[1]['description'][:15]),
+            wth_2 = str(trans_after_final_mod[1]['withdraw']),
+            dep_2 = str(trans_after_final_mod[1]['deposit']),
+            dt_2 = str(trans_after_final_mod[1]['Date']),
+            blnc_2 = str(trans_after_final_mod[1]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_3 = str(trans_after_final_mod[2]['description'][:15]),
+            wth_3 = str(trans_after_final_mod[2]['withdraw']),
+            dep_3 = str(trans_after_final_mod[2]['deposit']),
+            dt_3 = str(trans_after_final_mod[2]['Date']),
+            blnc_3 = str(trans_after_final_mod[2]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_4 = str(trans_after_final_mod[3]['description'][:15]),
+            wth_4 = str(trans_after_final_mod[3]['withdraw']),
+            dep_4 = str(trans_after_final_mod[3]['deposit']),
+            dt_4 = str(trans_after_final_mod[3]['Date']),
+            blnc_4 = str(trans_after_final_mod[3]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_5 = str(trans_after_final_mod[4]['description'][:15]),
+            wth_5 = str(trans_after_final_mod[4]['withdraw']),
+            dep_5 = str(trans_after_final_mod[4]['deposit']),
+            dt_5 = str(trans_after_final_mod[4]['Date']),
+            blnc_5 = str(trans_after_final_mod[4]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_6 = str(trans_after_final_mod[5]['description'][:15]),
+            wth_6 = str(trans_after_final_mod[5]['withdraw']),
+            dep_6 = str(trans_after_final_mod[5]['deposit']),
+            dt_6 = str(trans_after_final_mod[5]['Date']),
+            blnc_6 = str(trans_after_final_mod[5]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_7 = str(trans_after_final_mod[6]['description'][:15]),
+            wth_7 = str(trans_after_final_mod[6]['withdraw']),
+            dep_7 = str(trans_after_final_mod[6]['deposit']),
+            dt_7 = str(trans_after_final_mod[6]['Date']),
+            blnc_7 = str(trans_after_final_mod[6]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_8 = str(trans_after_final_mod[7]['description'][:15]),
+            wth_8 = str(trans_after_final_mod[7]['withdraw']),
+            dep_8 = str(trans_after_final_mod[7]['deposit']),
+            dt_8 = str(trans_after_final_mod[7]['Date']),
+            blnc_8 = str(trans_after_final_mod[7]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_9 = str(trans_after_final_mod[8]['description'][:15]),
+            wth_9 = str(trans_after_final_mod[8]['withdraw']),
+            dep_9 = str(trans_after_final_mod[8]['deposit']),
+            dt_9 = str(trans_after_final_mod[8]['Date']),
+            blnc_9 = str(trans_after_final_mod[8]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_10 = str(trans_after_final_mod[9]['description'][:15]),
+            wth_10 = str(trans_after_final_mod[9]['withdraw']),
+            dep_10 = str(trans_after_final_mod[9]['deposit']),
+            dt_10 = str(trans_after_final_mod[9]['Date']),
+            blnc_10 = str(trans_after_final_mod[9]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_11 = str(trans_after_final_mod[10]['description'][:15]),
+            wth_11 = str(trans_after_final_mod[10]['withdraw']),
+            dep_11 = str(trans_after_final_mod[10]['deposit']),
+            dt_11 = str(trans_after_final_mod[10]['Date']),
+            blnc_11 = str(trans_after_final_mod[10]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_12 = str(trans_after_final_mod[11]['description'][:15]),
+            wth_12 = str(trans_after_final_mod[11]['withdraw']),
+            dep_12 = str(trans_after_final_mod[11]['deposit']),
+            dt_12 = str(trans_after_final_mod[11]['Date']),
+            blnc_12 = str(trans_after_final_mod[11]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_13 = str(trans_after_final_mod[12]['description'][:15]),
+            wth_13 = str(trans_after_final_mod[12]['withdraw']),
+            dep_13 = str(trans_after_final_mod[12]['deposit']),
+            dt_13 = str(trans_after_final_mod[12]['Date']),
+            blnc_13 = str(trans_after_final_mod[12]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_14 = str(trans_after_final_mod[13]['description'][:15]),
+            wth_14 = str(trans_after_final_mod[13]['withdraw']),
+            dep_14 = str(trans_after_final_mod[13]['deposit']),
+            dt_14 = str(trans_after_final_mod[13]['Date']),
+            blnc_14 = str(trans_after_final_mod[13]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_15 = str(trans_after_final_mod[14]['description'][:15]),
+            wth_15 = str(trans_after_final_mod[14]['withdraw']),
+            dep_15 = str(trans_after_final_mod[14]['deposit']),
+            dt_15 = str(trans_after_final_mod[14]['Date']),
+            blnc_15 = str(trans_after_final_mod[14]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_16 = str(trans_after_final_mod[15]['description'][:15]),
+            wth_16 = str(trans_after_final_mod[15]['withdraw']),
+            dep_16 = str(trans_after_final_mod[15]['deposit']),
+            dt_16 = str(trans_after_final_mod[15]['Date']),
+            blnc_16 = str(trans_after_final_mod[15]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_17 = str(trans_after_final_mod[16]['description'][:15]),
+            wth_17 = str(trans_after_final_mod[16]['withdraw']),
+            dep_17 = str(trans_after_final_mod[16]['deposit']),
+            dt_17 = str(trans_after_final_mod[16]['Date']),
+            blnc_17 = str(trans_after_final_mod[16]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_18 = str(trans_after_final_mod[17]['description'][:15]),
+            wth_18 = str(trans_after_final_mod[17]['withdraw']),
+            dep_18 = str(trans_after_final_mod[17]['deposit']),
+            dt_18 = str(trans_after_final_mod[17]['Date']),
+            blnc_18 = str(trans_after_final_mod[17]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_19 = str(trans_after_final_mod[18]['description'][:15]),
+            wth_19 = str(trans_after_final_mod[18]['withdraw']),
+            dep_19 = str(trans_after_final_mod[18]['deposit']),
+            dt_19 = str(trans_after_final_mod[18]['Date']),
+            blnc_19 = str(trans_after_final_mod[18]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_20 = str(trans_after_final_mod[19]['description'][:15]),
+            wth_20 = str(trans_after_final_mod[19]['withdraw']),
+            dep_20 = str(trans_after_final_mod[19]['deposit']),
+            dt_20 = str(trans_after_final_mod[19]['Date']),
+            blnc_20 = str(trans_after_final_mod[19]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_21 = str(trans_after_final_mod[20]['description'][:15]),
+            wth_21 = str(trans_after_final_mod[20]['withdraw']),
+            dep_21 = str(trans_after_final_mod[20]['deposit']),
+            dt_21 = str(trans_after_final_mod[20]['Date']),
+            blnc_21 = str(trans_after_final_mod[20]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_22 = str(trans_after_final_mod[21]['description'][:15]),
+            wth_22 = str(trans_after_final_mod[21]['withdraw']),
+            dep_22 = str(trans_after_final_mod[21]['deposit']),
+            dt_22 = str(trans_after_final_mod[21]['Date']),
+            blnc_22 = str(trans_after_final_mod[21]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_23 = str(trans_after_final_mod[22]['description'][:15]),
+            wth_23 = str(trans_after_final_mod[22]['withdraw']),
+            dep_23 = str(trans_after_final_mod[22]['deposit']),
+            dt_23 = str(trans_after_final_mod[22]['Date']),
+            blnc_23 = str(trans_after_final_mod[22]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_24 = str(trans_after_final_mod[23]['description'][:15]),
+            wth_24 = str(trans_after_final_mod[23]['withdraw']),
+            dep_24 = str(trans_after_final_mod[23]['deposit']),
+            dt_24 = str(trans_after_final_mod[23]['Date']),
+            blnc_24 = str(trans_after_final_mod[23]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_25 = str(trans_after_final_mod[24]['description'][:15]),
+            wth_25 = str(trans_after_final_mod[24]['withdraw']),
+            dep_25 = str(trans_after_final_mod[24]['deposit']),
+            dt_25 = str(trans_after_final_mod[24]['Date']),
+            blnc_25 = str(trans_after_final_mod[24]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_26 = str(trans_after_final_mod[25]['description'][:15]),
+            wth_26 = str(trans_after_final_mod[25]['withdraw']),
+            dep_26 = str(trans_after_final_mod[25]['deposit']),
+            dt_26 = str(trans_after_final_mod[25]['Date']),
+            blnc_26 = str(trans_after_final_mod[25]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_27 = str(trans_after_final_mod[26]['description'][:15]),
+            wth_27 = str(trans_after_final_mod[26]['withdraw']),
+            dep_27 = str(trans_after_final_mod[26]['deposit']),
+            dt_27 = str(trans_after_final_mod[26]['Date']),
+            blnc_27 = str(trans_after_final_mod[26]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_28 = str(trans_after_final_mod[27]['description'][:15]),
+            wth_28 = str(trans_after_final_mod[27]['withdraw']),
+            dep_28 = str(trans_after_final_mod[27]['deposit']),
+            dt_28 = str(trans_after_final_mod[27]['Date']),
+            blnc_28 = str(trans_after_final_mod[27]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_29 = str(trans_after_final_mod[28]['description'][:15]),
+            wth_29 = str(trans_after_final_mod[28]['withdraw']),
+            dep_29 = str(trans_after_final_mod[28]['deposit']),
+            dt_29 = str(trans_after_final_mod[28]['Date']),
+            blnc_29 = str(trans_after_final_mod[28]['balance']),
+            # *******************************************
+
+            # ******************************************
+            des_30 = str(trans_after_final_mod[29]['description'][:15]),
+            wth_30 = str(trans_after_final_mod[29]['withdraw']),
+            dep_30 = str(trans_after_final_mod[29]['deposit']),
+            dt_30 = str(trans_after_final_mod[29]['Date']),
+            blnc_30 = str(trans_after_final_mod[29]['balance']),
+            # *******************************************
         )
         document.write('Output_File_TD.docx')
-        self.convert_to_pdf(f"TD_Trust")
+        self.convert_to_pdf(f"TD_Trust_{i_i}")
         try:
             os.remove(os.path.abspath("Output_File_TD.docx"))
         except:
@@ -909,10 +1284,10 @@ class TD_Document:
             print("*************************************")
             default_branch_no = "005110"
             branch_number = input("Branch Number Will remain Same : Yes or No : ")
-            if branch_number.lower("yes"):
+            if branch_number.lower() == "yes":
                 branch_number = default_branch_no
             else:
-                branch_number = input("Please Enter Branch Number :")
+                branch_number = input("Please Enter Branch Number : ")
             print("*************************************")
             print("*************************************")
             account_number = input("Please Enter 4 Digit Account Number : ")
@@ -926,12 +1301,32 @@ class TD_Document:
                 account_type = input("Please Enter account type : ")
             print("*************************************")
             print("*************************************")
-            statement_from = input("Please enter year and month like(feb, 2023) :")
+            statement_from = input("Please enter year and month like(feb, 2023) : ")
+            if i == 0:
+                print("*************************************")
+                print("*************************************")
+                starting_balance = str(input("Please Enter Starting Balanace : "))
+                self.global_starting_balance = float(starting_balance)
+            elif i > 0:
+                starting_balance = self.global_starting_balance
             print("*************************************")
             print("*************************************")
+            total_deposits = []
+            number_of_deposits = int(input("How many deposits you want to make : "))
+            for j in range(number_of_deposits):
+                if j == 0:
+                    name = str(input("Please enter Employer Name : "))
+                date = int(input("Please enter date : "))
+                amount = float(input("Please enter amount : "))
+                print("*************************************")
+                total_deposits.append({'description': name,'deposit': amount,'Date': date})
+            print("*************************************")
+            print("*************************************")
+            total_transactions = int(input("Please Enter the total number of transactions you want to make : "))
+            total_transactions = total_transactions - len(total_deposits)
 
-
-            self.making_TD_pdf_file_for_thirty_trans(b_1, b_2, b_3, name, address,branch_number, account_number, account_type, statement_from)
+            self.making_TD_pdf_file_for_thirty_trans(b_1, b_2, b_3, name, address,branch_number, account_number, 
+                            account_type, statement_from, starting_balance, i, total_deposits, total_transactions)
     
 
 
