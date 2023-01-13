@@ -817,6 +817,7 @@ class TFour:
 class TD_Document:
 
     global_starting_balance = 0
+    global_account_number = ""
 
     def ret_bank_name(self, name):
         name = name.split(" ")
@@ -986,14 +987,14 @@ class TD_Document:
 
 
 
-    def making_TD_pdf_file_for_thirty_trans(self, b_1_i, b_2_i, b_3_i, name_i, address_i, branch_number_i, account_number_i, account_type_i,
+    def making_TD_pdf_file_for_thirty_trans(self, b_1_i, b_2_i, b_3_i, name_i, address_i, branch_number_i, account_type_i,
                             statement_from_i, starting_balance_i, i_i, total_deposits_i, total_transactions_i ):
         template = "TD_Document_Final.docx"
         document = MailMerge(template)
         # "*************************************"
 
         ad_1, ad_2 = self.making_address(address_i)
-        account_num = self.making_account_number(account_number_i)
+        # account_num = self.making_account_number(account_number_i)
         statement_date, month_days = self.making_statement_from(statement_from_i)
         starting_balance_dat = self.starting_blnc_date(statement_date)
         date_to_send = starting_balance_dat[:3]
@@ -1012,7 +1013,7 @@ class TD_Document:
             adr_1 = str(ad_1),
             adr_2 = str(ad_2),
             br_no = str(branch_number_i),
-            ac_no = str(account_num),
+            ac_no = str(self.global_account_number),
             acc_type = str(account_type_i),
             stmnt_date = str(statement_date),
             strt_bl = str(self.making_two_zer_dec(self.comma_seprated(float(starting_balance_i)))),
@@ -1288,9 +1289,12 @@ class TD_Document:
                 branch_number = default_branch_no
             else:
                 branch_number = input("Please Enter Branch Number : ")
-            print("*************************************")
-            print("*************************************")
-            account_number = input("Please Enter 4 Digit Account Number : ")
+            if i == 0:
+                print("*************************************")
+                print("*************************************")
+                account_number = input("Please Enter 4 Digit Account Number : ")
+                account_num = self.making_account_number(account_number)
+                self.global_account_number = account_num
             print("*************************************")
             print("*************************************")
             default_account_type = "STUDENT"
@@ -1325,7 +1329,7 @@ class TD_Document:
             total_transactions = int(input("Please Enter the total number of transactions you want to make : "))
             total_transactions = total_transactions - len(total_deposits)
 
-            self.making_TD_pdf_file_for_thirty_trans(b_1, b_2, b_3, name, address,branch_number, account_number, 
+            self.making_TD_pdf_file_for_thirty_trans(b_1, b_2, b_3, name, address,branch_number, 
                             account_type, statement_from, starting_balance, i, total_deposits, total_transactions)
     
 
