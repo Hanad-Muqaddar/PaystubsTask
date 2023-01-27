@@ -875,7 +875,7 @@ class TD_Document:
             return data
         else:
             date = f"{0}{data1[-1]}"
-            date2 = f"{data1[0]}{date}"
+            date2 = f"{data1[0]} {date}"
             return date2
     
     def making_two_zer_dec(self, num):
@@ -925,10 +925,10 @@ class TD_Document:
         for i in dict:
             if len(str(i['Date'])) > 1:
                 old_val = i['Date']
-                i['Date'] = f"{mon}{old_val}"
+                i['Date'] = f"{mon} {old_val}"
             elif len(str(i['Date'])) == 1:
                 old_val = i['Date']
-                i['Date'] = f"{mon}0{old_val}"
+                i['Date'] = f"{mon} 0{old_val}"
         return dict
     
     def calculate_total_wth_drawl(self, dict):
@@ -953,10 +953,26 @@ class TD_Document:
         all_transactions = []
         for i in wth_drws:
             i['Date'] = random.randint(2,month_days)
+            try:
+                del i['balance']
+            except:
+                pass
+            try:
+                del i['deposit']
+            except:
+                pass 
             all_transactions.append(i)
             
         for j in depos:
             j['Date'] = random.randint(2,month_days)
+            try:
+                del j['balance']
+            except:
+                pass
+            try:
+                del j['withdraw']
+            except:
+                pass 
             all_transactions.append(j)
         
         for k in incoming_deposits:
@@ -1269,13 +1285,13 @@ class TD_Document:
         return
 
 
-    def TD_wrapper(self, name, address):
+    def TD_wrapper(self, emp_name, address):
         number_of_months = input("How many months you want to create for : ")
         for i in range(int(number_of_months)):
             print("*************************************")
             print("*************************************")
             default_bank_name = "LONDON POND MILLS 1086 COMMISSIONERS ROAD EAST LONDON, ON N5Z 4W8"
-            bank_option_input = str(input("Bank name will remain same : Yes or No : "))
+            bank_option_input = str(input("Branch info will remain same : Yes or No : "))
             if bank_option_input.lower() == "yes":
                 b_1, b_2, b_3 = self.ret_bank_name(default_bank_name)
             else:
@@ -1329,7 +1345,7 @@ class TD_Document:
             total_transactions = int(input("Please Enter the total number of transactions you want to make : "))
             total_transactions = total_transactions - len(total_deposits)
 
-            self.making_TD_pdf_file_for_thirty_trans(b_1, b_2, b_3, name, address,branch_number, 
+            self.making_TD_pdf_file_for_thirty_trans(b_1, b_2, b_3, emp_name, address, branch_number, 
                             account_type, statement_from, starting_balance, i, total_deposits, total_transactions)
     
 
@@ -1357,7 +1373,7 @@ if __name__ == '__main__':
                          4 ) Proof Of Enrollment
                          5 ) TD Document
                          6 ) All
-                    ''')
+                        ''')
     print("***************************")
     print("***************************")
     
