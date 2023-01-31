@@ -1,5 +1,24 @@
 import random
 
+federal_first = 15
+province_first = 5.05
+federal_second = 20.5
+province_second = 9.15
+federal_three = 26
+province_three = 11.16
+federal_four = 29
+province_four = 12.16
+federal_five = 33
+province_five = 13.16
+
+EI_Rate = 1.58
+CPP_Rate = 5.70
+EI_Maximum_Deduction = 952.74
+CPP_Maximum_Deduction = 3499.80
+last_year_to_date = 0
+
+
+
 EI_Rates = [
     {"year" : 2020, "ei_rate" : 1.58, "max_deduction": 856.36},
     {"year" : 2021, "ei_rate" : 1.58, "max_deduction": 889.54},
