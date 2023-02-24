@@ -10,27 +10,27 @@ from docx2pdf import convert
 from Constants import withdrawls
 from Constants import deposits
 
-# PayStub Variables
+from Constants import federal_first
+from Constants import province_first
+from Constants import federal_second
+from Constants import province_second
+from Constants import federal_three
+from Constants import province_three
+from Constants import federal_four
+from Constants import province_four
+from Constants import federal_five
+from Constants import province_five
+from Constants import EI_Rate
+from Constants import CPP_Rate
+from Constants import EI_Maximum_Deduction
+from Constants import CPP_Maximum_Deduction
+
+# Paystub Variables
 ###########################################################################################################################################
 ###########################################################################################################################################
 ###########################################################################################################################################
 ###########################################################################################################################################
 
-federal_first = 15
-province_first = 5.05
-federal_second = 20.5
-province_second = 9.15
-federal_three = 26
-province_three = 11.16
-federal_four = 29
-province_four = 12.16
-federal_five = 33
-province_five = 13.16
-
-EI_Rate = 1.58
-CPP_Rate = 5.70
-EI_Maximum_Deduction = 952.74
-CPP_Maximum_Deduction = 3499.80
 last_year_to_date = 0
 
 ############################################################################################################################################
@@ -341,19 +341,19 @@ class PayStubs:
             )
 
         document.merge(
-            employee_name_1=name_i.capitalize(),
-            emp_2=name_i.capitalize(),
+            employee_name_1=name_i.upper(),
+            emp_2=name_i.upper(),
             hours=str(self.making_two_zer_dec1(hours_i)),
             rate=str(self.making_two_zer_dec1(rate_i)),
             total=str(self.comma_seprated((round(g_total_i, 2)))),
             gp_total=str(self.comma_seprated((round(g_total_i, 2)))),
-            employee_addr=str(employee_address_i).capitalize(),
-            employer_name=str(employer_name_i).capitalize(),
-            employer_addr_1=str(employer_address_1_i).capitalize(),
-            employer_addr_2=str(employer_address_2_i).capitalize(),
-            employer_name_1=str(employer_name_i).capitalize(),
-            employer_addr_1_1=str(employer_address_1_i).capitalize(),
-            employer_addr_2_2=str(employer_address_2_i).capitalize(),
+            employee_addr=str(employee_address_i).upper(),
+            employer_name=str(employer_name_i).upper(),
+            employer_addr_1=str(employer_address_1_i).upper(),
+            employer_addr_2=str(employer_address_2_i).upper(),
+            employer_name_1=str(employer_name_i).upper(),
+            employer_addr_1_1=str(employer_address_1_i).upper(),
+            employer_addr_2_2=str(employer_address_2_i).upper(),
             acn=str(account_number_i),
             y_to_d_1=str(year_to_date),
             y_to_d_2=str(year_to_date),
@@ -537,14 +537,14 @@ class Proof_Of_SIN:
         template = "Proof_Of_SIN.docx"
         document = MailMerge(template)
         document.merge(
-            sin_name=str(name_i).capitalize(),
-            address_1_sin=str(address_1).capitalize(),
-            address_2_sin=str(address_2).capitalize(),
-            first_name=str(first_name).capitalize(),
-            last_name=str(last_name).capitalize(),
-            sin_no_1=str(sin1),
-            sin_no_2=str(sin2),
-            sin_no_3=str(sin3),
+            sin_name=str(name_i).upper(),
+            address_1_sin=str(address_1).upper(),
+            address_2_sin=str(address_2).upper(),
+            first_name=str(first_name).upper(),
+            last_name=str(last_name).upper(),
+            sin_no_1=str(sin1).upper(),
+            sin_no_2=str(sin2).upper(),
+            sin_no_3=str(sin3).upper(),
         )
         document.write("Output_File_SIN.docx")
         self.convert_to_pdf(f"Proof_Of_SIN")
@@ -592,18 +592,18 @@ class Proof_Of_Enrollment:
         template = "POE.docx"
         document = MailMerge(template)
         document.merge(
-            enrol_date=str(enrollment_date_i),
+            enrol_date=str(enrollment_date_i).capitalize(),
             student_name=str(student_name_i).title(),
             student_number=str(student_number_i),
-            std_career=str(career_i).capitalize(),
-            std_term=str(term_i).capitalize(),
-            term_start_date=str(term_start_date_i),
-            term_end_date=str(term_ending_date_i),
-            faculty=str(faculty_i).capitalize(),
-            plan_of_study=str(plan_of_study_i).capitalize(),
-            term_status=str(term_status_i).capitalize(),
-            year_in_program=str(year_in_program_i),
-            length=str(program_length_i),
+            std_career=str(career_i).upper(),
+            std_term=str(term_i).upper(),
+            term_start_date=str(term_start_date_i).capitalize(),
+            term_end_date=str(term_ending_date_i).capitalize(),
+            faculty=str(faculty_i).upper(),
+            plan_of_study=str(plan_of_study_i).upper(),
+            term_status=str(term_status_i).upper(),
+            year_in_program=str(year_in_program_i).upper(),
+            length=str(program_length_i).upper(),
         )
         document.write("Output_File_POE.docx")
         self.convert_to_pdf(f"Proof_of_Enrollment")
@@ -868,23 +868,23 @@ class TFour:
         )
 
         document.merge(
-            emp_name_1=str(employer_name_i).capitalize(),
-            emp_name_2=str(employer_name_i).capitalize(),
+            emp_name_1=str(employer_name_i).upper(),
+            emp_name_2=str(employer_name_i).upper(),
             ###################
             t4_year=str(t4_year_input_i),
             t4_year_1=str(t4_year_input_i),
             ###################
-            t4_address_1_1=str(address_1).capitalize(),
-            t4_address_1_2=str(address_1).capitalize(),
+            t4_address_1_1=str(address_1).upper(),
+            t4_address_1_2=str(address_1).upper(),
             ###################
-            t4_address_2_1=str(address_2).capitalize(),
-            t4_address_2_2=str(address_2).capitalize(),
+            t4_address_2_1=str(address_2).upper(),
+            t4_address_2_2=str(address_2).upper(),
             ###################
-            f_nm_1=str(first_name).capitalize(),
-            f_nm_2=str(first_name).capitalize(),
+            f_nm_1=str(first_name).upper(),
+            f_nm_2=str(first_name).upper(),
             ###################
-            l_nm_1=str(last_name).capitalize(),
-            l_nm_2=str(last_name).capitalize(),
+            l_nm_1=str(last_name).upper(),
+            l_nm_2=str(last_name).upper(),
             ###################
             sn1=str(sin1),
             sn2=str(sin2),
@@ -1164,16 +1164,6 @@ class TD_Document:
 
         all_transactions = self.adding_month(all_transactions, date)
 
-        for f_trans in all_transactions:
-            try:
-                f_trans['deposit'] = self.comma_seprated(float(f_trans['deposit']))
-            except:
-                pass
-            try:
-                f_trans['withdraw'] = self.comma_seprated(float(f_trans['withdraw']))
-            except:
-                pass
-
         for i in range(30 - trans):
             all_transactions.append(
                 {
@@ -1222,14 +1212,24 @@ class TD_Document:
         total_with_drawl = self.calculate_total_wth_drawl(trans_after_final_mod)
         total_depos = self.calculate_total_deposit(trans_after_final_mod)
 
+        for f_trans in trans_after_final_mod:
+            try:
+                f_trans['deposit'] = self.comma_seprated(float(f_trans['deposit']))
+            except:
+                pass
+            try:
+                f_trans['withdraw'] = self.comma_seprated(float(f_trans['withdraw']))
+            except:
+                pass
+
         # "*************************************"
         document.merge(
-            bnk_1=str(b_1_i).capitalize(),
-            bnk_2=str(b_2_i).capitalize(),
-            bnk_3=str(b_3_i).capitalize(),
-            emp_name=str(name_i).capitalize(),
-            adr_1=str(ad_1).capitalize(),
-            adr_2=str(ad_2).capitalize(),
+            bnk_1=str(b_1_i).upper(),
+            bnk_2=str(b_2_i).upper(),
+            bnk_3=str(b_3_i).upper(),
+            emp_name=str(name_i).upper(),
+            adr_1=str(ad_1).upper(),
+            adr_2=str(ad_2).upper(),
             br_no=str(branch_number_i),
             ac_no=str(self.global_account_number),
             acc_type=str(account_type_i),
@@ -1531,7 +1531,7 @@ class TD_Document:
                 amount = float(input("Please enter amount : "))
                 print("*************************************")
                 total_deposits.append(
-                    {"description": name.capitalize(), "deposit": amount, "Date": date}
+                    {"description": name.upper(), "deposit": amount, "Date": date}
                 )
             print("*************************************")
             print("*************************************")
@@ -1567,10 +1567,10 @@ if __name__ == "__main__":
 
     print("***************************")
     print("***************************")
-    name = input("Please enter Employee name: ").capitalize()
+    name = input("Please enter Employee name: ").upper()
     print("***************************")
     print("***************************")
-    employee_address = input("Please enter Employee address: ").capitalize()
+    employee_address = input("Please enter Employee address: ").upper()
 
     print("***************************")
     print("***************************")

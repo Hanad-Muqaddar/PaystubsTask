@@ -16,11 +16,9 @@ from Constants import values_for_paystub
 ###########################################################################################################################################
 ###########################################################################################################################################
 ###########################################################################################################################################
+all_vars_for_this_year = {}
 
-global_testing_var = 0
-
-
-federal_first = 0
+federal_first = ""
 province_first = ""
 federal_second = ""
 province_second = ""
@@ -34,6 +32,7 @@ EI_Rate = ""
 CPP_Rate = ""
 EI_Maximum_Deduction = ""
 CPP_Maximum_Deduction = ""
+last_year_to_date = ""
 
 
 # Global Variables
@@ -66,15 +65,59 @@ def making_address(address):
 ###########################################################################################################################################
 ###########################################################################################################################################
 ###########################################################################################################################################
-
 def options_feature(name, employee_address):
     selected_option = input(
         """Do you want to create Selected documents (1,2,3), Exit or Regular : Select Options,
-                    1 ) Selected
-                    2 ) Exit    
+                    1 ) Regular
+                    2 ) Selected
+                    3 ) Exit    
                         """
     )
     if int(selected_option) == 1:
+        document_type = input(
+            """ Please Enter Which Document You want to Create, Select Options 
+                            1 ) PayStub 
+                            2 ) Proof Of SIN 
+                            3 ) T4 Document
+                            4 ) Proof Of Enrollment
+                            5 ) TD Document
+                            6 ) All
+                            """
+        )
+        print("***************************")
+        print("***************************")
+        if int(document_type) == 1:
+            pay_sub_object = PayStubs()
+            pay_sub_object.paystub_wrapper(name, employee_address)
+        elif int(document_type) == 2:
+            sin_object = Proof_Of_SIN()
+            sin_object.SIN_Wrapper(name, employee_address)
+        elif int(document_type) == 3:
+            TFour_object = TFour()
+            TFour_object.T4_Wrapper(name, employee_address)
+        elif int(document_type) == 4:
+            poof_of_enrl = Proof_Of_Enrollment()
+            poof_of_enrl.pof_wrapper(
+                name,
+            )
+        elif int(document_type) == 5:
+            td_clas = TD_Document()
+            td_clas.TD_wrapper(name, employee_address)
+        elif int(document_type) == 6:
+            pay_sub_object = PayStubs()
+            sin_object = Proof_Of_SIN()
+            TFour_object = TFour()
+            poof_of_enrl = Proof_Of_Enrollment()
+            td_clas = TD_Document()
+
+            pay_sub_object.paystub_wrapper(name, employee_address)
+            sin_object.SIN_Wrapper(name, employee_address)
+            TFour_object.T4_Wrapper(name, employee_address)
+            poof_of_enrl.pof_wrapper(
+                name,
+            )
+            td_clas.TD_wrapper(name, employee_address)
+    if int(selected_option) == 2:
         document_type = input(
             """ Please Enter Which Document You want to Create, Select Options like this : (1,2,3)
                             1 ) PayStub 
@@ -82,7 +125,6 @@ def options_feature(name, employee_address):
                             3 ) T4 Document
                             4 ) Proof Of Enrollment
                             5 ) TD Document
-                            6 ) ALL
                             """
         )
         int_numbers = list(map(int, document_type.split(",")))
@@ -102,22 +144,7 @@ def options_feature(name, employee_address):
             elif number == 5:
                 td_clas = TD_Document()
                 td_clas.TD_wrapper(name, employee_address)
-            elif int(document_type) == 6:
-                pay_sub_object = PayStubs()
-                sin_object = Proof_Of_SIN()
-                TFour_object = TFour()
-                poof_of_enrl = Proof_Of_Enrollment()
-                td_clas = TD_Document()
-
-                pay_sub_object.paystub_wrapper(name, employee_address)
-                sin_object.SIN_Wrapper(name, employee_address)
-                TFour_object.T4_Wrapper(name, employee_address)
-                poof_of_enrl.pof_wrapper(
-                    name,
-                )
-                td_clas.TD_wrapper(name, employee_address)
-
-    if int(selected_option) == 2:
+    if int(selected_option) == 3:
         import sys
         print("Thanks for using this. GoodBye")
         sys.exit()
@@ -126,6 +153,7 @@ def options_feature(name, employee_address):
 ############################################################################################################################################
 ############################################################################################################################################
 ############################################################################################################################################
+
 
 class PayStubs:
 
@@ -394,6 +422,9 @@ class PayStubs:
         employee_address_i,
         hours_i,
         rate_i,
+        # employer_name_i,
+        # employer_address_1_i,
+        # employer_address_2_i,
         g_total_i,
         account_number_i,
         year_to_date,
@@ -410,6 +441,7 @@ class PayStubs:
     ):
         template = "Hanad-ADP-PAYSTUBS.docx"
         document = MailMerge(template)
+        # print(document.get_merge_fields())
         if Ei_tax_i == 0:
             ei_tax_mod = "00.00"
         else:
@@ -491,6 +523,16 @@ class PayStubs:
             "************************************************************************************"
         )
 
+        # pay_sub_object = PayStubs()
+        # print("***************************")
+        # print("***************************")
+        # employer_name = input("Please enter Employer name: ")
+        # print("***************************")
+        # print("***************************")
+        # employer_address_1 = input("Please enter Employer Address 1: ")
+        # print("***************************")
+        # print("***************************")
+        # employer_address_2 = input("Please enter Employer Adress 2: ")
         rate = float(input("Please enter the rate which you decided: "))
         print("***************************")
         print("***************************")
@@ -513,35 +555,23 @@ class PayStubs:
                 new_year_to_send = f_period_ending_date.split("/")[-1]
                 important_values_for_paystub = values_for_paystub(new_year_to_send)
                 
-                global federal_first
                 federal_first = important_values_for_paystub['federal_first']
-                global province_first
                 province_first = important_values_for_paystub['province_first']
-                global federal_second
                 federal_second = important_values_for_paystub['federal_second']
-                global province_second
                 province_second = important_values_for_paystub['province_second']
-                global federal_three
                 federal_three = important_values_for_paystub['federal_three']
-                global province_three
                 province_three = important_values_for_paystub['province_three']
-                global federal_four
                 federal_four = important_values_for_paystub['federal_four']
-                global province_four
                 province_four = important_values_for_paystub['province_four']
-                global federal_five
                 federal_five = important_values_for_paystub['federal_five']
-                global province_five
                 province_five = important_values_for_paystub['province_five']
-                global EI_Rate
                 EI_Rate = important_values_for_paystub['EI_Rate']
-                global CPP_Rate
                 CPP_Rate = important_values_for_paystub['CPP_Rate']
-                global EI_Maximum_Deduction
                 EI_Maximum_Deduction = important_values_for_paystub['EI_Maximum_Deduction']
-                global CPP_Maximum_Deduction
                 CPP_Maximum_Deduction = important_values_for_paystub['CPP_Maximum_Deduction']
-                # last_year_to_date = important_values_for_paystub['last_year_to_date']
+                last_year_to_date = important_values_for_paystub['last_year_to_date']
+
+
 
                 print("***************************")
                 print("***************************")
@@ -576,12 +606,16 @@ class PayStubs:
                 net_pay = gross_total - income_tax - Ei_tax - cpp_tax
                 round_pay = round(net_pay, 2)
                 f_net_pay = f"{round_pay:,}"
+                # f_net_pay = pay_sub_object.jaugard_function(f_net_pay)
 
                 self.making_pdf_file(
                     name,
                     employee_address,
                     hours,
                     rate,
+                    # employer_name,
+                    # employer_address_1,
+                    # employer_address_2,
                     gross_total,
                     account_number,
                     year_to_date,
@@ -596,6 +630,13 @@ class PayStubs:
                     year_to_date_ei,
                     year_to_date_cpp,
                 )
+
+        # more_docs = str(input("Do you want to create more documents : Yes or No "))
+        # if more_docs.lower() == "yes":
+        #     options_feature(global_name, global_employee_address)
+        # else:
+        #     import sys
+        #     sys.exit()
 
 
 #######################################################################################################################################
@@ -616,9 +657,15 @@ class Proof_Of_SIN:
 
     def convert_to_pdf(self, filename):
         new_filename = filename + ".pdf"
+        # wdFormatPDF = 17
         in_file = os.path.abspath("Output_File_SIN.docx")
         out_file = os.path.abspath("Results/" + new_filename)
         convert(in_file, out_file)
+        # word = comtypes.client.CreateObject('Word.Application')
+        # doc = word.Documents.Open(in_file)
+        # doc.SaveAs(out_file, FileFormat=wdFormatPDF)
+        # doc.Close()
+        # word.Quit()
 
     def making_fist_last_name(self, name):
         name_list = name.split(" ")
@@ -669,8 +716,19 @@ class Proof_Of_SIN:
             "************************************************************************************"
         )
 
+        # print("*************************************")
+        # print("*************************************")
+        # sin_number = str(input("Please Enter SIN Number: "))
+        # print("*************************************")
+        # print("*************************************")
         self.making_sin_pdf_file(name, employee_address, global_sin_number)
-    
+        
+        # more_docs = str(input("Do you want to create more documents : Yes or No "))
+        # if more_docs.lower() == "yes":
+        #     options_feature(global_name, global_employee_address)
+        # else:
+        #     import sys
+        #     sys.exit()
 
 
 class Proof_Of_Enrollment:
@@ -827,6 +885,13 @@ class Proof_Of_Enrollment:
             year_in_program,
             program_length,
         )
+
+        # more_docs = str(input("Do you want to create more documents : Yes or No "))
+        # if more_docs.lower() == "yes":
+        #     options_feature(global_name, global_employee_address)
+        # else:
+        #     import sys
+        #     sys.exit()
 
 
 class TFour:
@@ -1053,6 +1118,14 @@ class TFour:
             "************************************************************************************"
         )
 
+        # print("*************************************")
+        # print("*************************************")
+        # sin_number = str(input("Please Enter SIN Number: "))
+        # print("*************************************")
+        # print("*************************************")
+        # employer_name = input("Please Enter Employer Name: ")
+        # print("*************************************")
+        # print("*************************************")
         number_of_documents = int(
             input("Please enter How many documents you want to create: ")
         )
@@ -1073,12 +1146,21 @@ class TFour:
                 self.making_t4_pdf_file(
                     name,
                     employee_address,
+                    # sin_number,
                     global_sin_number,
                     t4_year_input,
                     i,
                     gross_salary,
+                    # employer_name,
                     global_employer_name,
                 )
+
+        # more_docs = str(input("Do you want to create more documents : Yes or No "))
+        # if more_docs.lower() == "yes":
+        #     options_feature(global_name, global_employee_address)
+        # else:
+        #     import sys
+        #     sys.exit()
 
 
 class TD_Document:
@@ -1211,51 +1293,6 @@ class TD_Document:
             if j["deposit"] != "":
                 total = total + float(j["deposit"])
         return total
-    
-    def convrt_val(self, text):
-        first_step = text.split(".")
-        if len(first_step) == 2:
-            after_point = len(first_step[-1])
-            if after_point == 1:
-                first_step[-1] = first_step[-1] + "0"
-                final_ret_val = first_step[0] + "." + first_step[-1]
-                return final_ret_val
-            elif after_point == 2:
-                return first_step[0] + "." + first_step[-1]
-        elif len(first_step) == 1:
-            send_val = "00"
-            final_ret_val = first_step[0] + "." + send_val
-            return final_ret_val
-
-    def final_update_on_td(self, trans):
-        new_trans = []
-        for i in trans:
-            try:
-                i['withdraw'] = self.convrt_val(i['withdraw'])
-            except:
-                pass
-            try:
-                i['deposit'] = self.convrt_val(i['deposit'])
-            except:
-                pass
-            new_trans.append(i)
-        return new_trans
-    
-    def another_final_update_on_td(self, trans):
-        new_trans = []
-        for i in trans:
-            try:
-                if i['withdraw'] == ".00":
-                    i['withdraw'] = ""
-            except:
-                pass
-            try:
-                if i['deposit'] == ".00":
-                    i['deposit'] = ""
-            except:
-                pass
-            new_trans.append(i)
-        return new_trans
 
     def making_all_transactions(
         self,
@@ -1332,7 +1369,22 @@ class TD_Document:
 
         return all_transactions, global_balance
 
-    
+    def convrt_val(self, text):
+        first_step = text.split(".")
+        if len(first_step) == 2:
+            after_point = len(first_step[-1])
+            if after_point == 1:
+                first_step[-1] = first_step[-1] + "0"
+                final_ret_val = first_step[0] + "." + first_step[-1]
+                return final_ret_val
+            elif after_point == 2:
+                return first_step[0] + "." + first_step[-1]
+        elif len(first_step) == 1:
+            send_val = "00"
+            final_ret_val = first_step[0] + "." + send_val
+            return final_ret_val
+
+
     def making_TD_pdf_file_for_thirty_trans(
         self,
         b_1_i,
@@ -1353,6 +1405,7 @@ class TD_Document:
         # "*************************************"
 
         ad_1, ad_2 = self.making_address(address_i)
+        # account_num = self.making_account_number(account_number_i)
         statement_date, month_days = self.making_statement_from(statement_from_i)
         starting_balance_dat = self.starting_blnc_date(statement_date)
         date_to_send = starting_balance_dat[:3]
@@ -1376,9 +1429,6 @@ class TD_Document:
                 f_trans["withdraw"] = self.comma_seprated(float(f_trans["withdraw"]))
             except:
                 pass
-        
-        trans_after_final_mod = self.final_update_on_td(trans_after_final_mod)
-        trans_after_final_mod = self.another_final_update_on_td(trans_after_final_mod)
 
         # "*************************************"
         document.merge(
@@ -1400,211 +1450,211 @@ class TD_Document:
             ttl_dep=str(self.making_two_zer_dec(self.comma_seprated(total_depos))),
             # ******************************************
             des_1=str(trans_after_final_mod[0]["description"][:15]),
-            wth_1=str(trans_after_final_mod[0]["withdraw"]),
-            dep_1=str(trans_after_final_mod[0]["deposit"]),
+            wth_1=str(self.convrt_val(str(trans_after_final_mod[0]["withdraw"]))),
+            dep_1=str(self.convrt_val(str(trans_after_final_mod[0]["deposit"]))),
             dt_1=str(trans_after_final_mod[0]["Date"]),
             blnc_1=str(trans_after_final_mod[0]["balance"]),
             # *******************************************
             # ******************************************
             des_2=str(trans_after_final_mod[1]["description"][:15]),
-            wth_2=str(trans_after_final_mod[1]["withdraw"]),
-            dep_2=str(trans_after_final_mod[1]["deposit"]),
+            wth_2=str(self.convrt_val(str(trans_after_final_mod[1]["withdraw"]))),
+            dep_2=str(self.convrt_val(str(trans_after_final_mod[1]["deposit"]))),
             dt_2=str(trans_after_final_mod[1]["Date"]),
             blnc_2=str(trans_after_final_mod[1]["balance"]),
             # *******************************************
             # ******************************************
             des_3=str(trans_after_final_mod[2]["description"][:15]),
-            wth_3=str(trans_after_final_mod[2]["withdraw"]),
-            dep_3=str(trans_after_final_mod[2]["deposit"]),
+            wth_3=str(self.convrt_val(str(trans_after_final_mod[2]["withdraw"]))),
+            dep_3=str(self.convrt_val(str(trans_after_final_mod[2]["deposit"]))),
             dt_3=str(trans_after_final_mod[2]["Date"]),
             blnc_3=str(trans_after_final_mod[2]["balance"]),
             # *******************************************
             # ******************************************
             des_4=str(trans_after_final_mod[3]["description"][:15]),
-            wth_4=str(trans_after_final_mod[3]["withdraw"]),
-            dep_4=str(trans_after_final_mod[3]["deposit"]),
+            wth_4=str(self.convrt_val(str(trans_after_final_mod[3]["withdraw"]))),
+            dep_4=str(self.convrt_val(str(trans_after_final_mod[3]["deposit"]))),
             dt_4=str(trans_after_final_mod[3]["Date"]),
             blnc_4=str(trans_after_final_mod[3]["balance"]),
             # *******************************************
             # ******************************************
             des_5=str(trans_after_final_mod[4]["description"][:15]),
-            wth_5=str(trans_after_final_mod[4]["withdraw"]),
-            dep_5=str(trans_after_final_mod[4]["deposit"]),
+            wth_5=str(self.convrt_val(str(trans_after_final_mod[4]["withdraw"]))),
+            dep_5=str(self.convrt_val(str(trans_after_final_mod[4]["deposit"]))),
             dt_5=str(trans_after_final_mod[4]["Date"]),
             blnc_5=str(trans_after_final_mod[4]["balance"]),
             # *******************************************
             # ******************************************
             des_6=str(trans_after_final_mod[5]["description"][:15]),
-            wth_6=str(trans_after_final_mod[5]["withdraw"]),
-            dep_6=str(trans_after_final_mod[5]["deposit"]),
+            wth_6=str(self.convrt_val(str(trans_after_final_mod[5]["withdraw"]))),
+            dep_6=str(self.convrt_val(str(trans_after_final_mod[5]["deposit"]))),
             dt_6=str(trans_after_final_mod[5]["Date"]),
             blnc_6=str(trans_after_final_mod[5]["balance"]),
             # *******************************************
             # ******************************************
             des_7=str(trans_after_final_mod[6]["description"][:15]),
-            wth_7=str(trans_after_final_mod[6]["withdraw"]),
-            dep_7=str(trans_after_final_mod[6]["deposit"]),
+            wth_7=str(self.convrt_val(str(trans_after_final_mod[6]["withdraw"]))),
+            dep_7=str(self.convrt_val(str(trans_after_final_mod[6]["deposit"]))),
             dt_7=str(trans_after_final_mod[6]["Date"]),
             blnc_7=str(trans_after_final_mod[6]["balance"]),
             # *******************************************
             # ******************************************
             des_8=str(trans_after_final_mod[7]["description"][:15]),
-            wth_8=str(trans_after_final_mod[7]["withdraw"]),
-            dep_8=str(trans_after_final_mod[7]["deposit"]),
+            wth_8=str(self.convrt_val(str(trans_after_final_mod[7]["withdraw"]))),
+            dep_8=str(self.convrt_val(str(trans_after_final_mod[7]["deposit"]))),
             dt_8=str(trans_after_final_mod[7]["Date"]),
             blnc_8=str(trans_after_final_mod[7]["balance"]),
             # *******************************************
             # ******************************************
             des_9=str(trans_after_final_mod[8]["description"][:15]),
-            wth_9=str(trans_after_final_mod[8]["withdraw"]),
-            dep_9=str(trans_after_final_mod[8]["deposit"]),
+            wth_9=str(self.convrt_val(str(trans_after_final_mod[8]["withdraw"]))),
+            dep_9=str(self.convrt_val(str(trans_after_final_mod[8]["deposit"]))),
             dt_9=str(trans_after_final_mod[8]["Date"]),
             blnc_9=str(trans_after_final_mod[8]["balance"]),
             # *******************************************
             # ******************************************
             des_10=str(trans_after_final_mod[9]["description"][:15]),
-            wth_10=str(trans_after_final_mod[9]["withdraw"]),
-            dep_10=str(trans_after_final_mod[9]["deposit"]),
+            wth_10=str(self.convrt_val(str(trans_after_final_mod[9]["withdraw"]))),
+            dep_10=str(self.convrt_val(str(trans_after_final_mod[9]["deposit"]))),
             dt_10=str(trans_after_final_mod[9]["Date"]),
             blnc_10=str(trans_after_final_mod[9]["balance"]),
             # *******************************************
             # ******************************************
             des_11=str(trans_after_final_mod[10]["description"][:15]),
-            wth_11=str(trans_after_final_mod[10]["withdraw"]),
-            dep_11=str(trans_after_final_mod[10]["deposit"]),
+            wth_11=str(self.convrt_val(str(trans_after_final_mod[10]["withdraw"]))),
+            dep_11=str(self.convrt_val(str(trans_after_final_mod[10]["deposit"]))),
             dt_11=str(trans_after_final_mod[10]["Date"]),
             blnc_11=str(trans_after_final_mod[10]["balance"]),
             # *******************************************
             # ******************************************
             des_12=str(trans_after_final_mod[11]["description"][:15]),
-            wth_12=str(trans_after_final_mod[11]["withdraw"]),
-            dep_12=str(trans_after_final_mod[11]["deposit"]),
+            wth_12=str(self.convrt_val(str(trans_after_final_mod[11]["withdraw"]))),
+            dep_12=str(self.convrt_val(str(trans_after_final_mod[11]["deposit"]))),
             dt_12=str(trans_after_final_mod[11]["Date"]),
             blnc_12=str(trans_after_final_mod[11]["balance"]),
             # *******************************************
             # ******************************************
             des_13=str(trans_after_final_mod[12]["description"][:15]),
-            wth_13=str(trans_after_final_mod[12]["withdraw"]),
-            dep_13=str(trans_after_final_mod[12]["deposit"]),
+            wth_13=str(self.convrt_val(str(trans_after_final_mod[12]["withdraw"]))),
+            dep_13=str(self.convrt_val(str(trans_after_final_mod[12]["deposit"]))),
             dt_13=str(trans_after_final_mod[12]["Date"]),
             blnc_13=str(trans_after_final_mod[12]["balance"]),
             # *******************************************
             # ******************************************
             des_14=str(trans_after_final_mod[13]["description"][:15]),
-            wth_14=str(trans_after_final_mod[13]["withdraw"]),
-            dep_14=str(trans_after_final_mod[13]["deposit"]),
+            wth_14=str(self.convrt_val(str(trans_after_final_mod[13]["withdraw"]))),
+            dep_14=str(self.convrt_val(str(trans_after_final_mod[13]["deposit"]))),
             dt_14=str(trans_after_final_mod[13]["Date"]),
             blnc_14=str(trans_after_final_mod[13]["balance"]),
             # *******************************************
             # ******************************************
             des_15=str(trans_after_final_mod[14]["description"][:15]),
-            wth_15=str(trans_after_final_mod[14]["withdraw"]),
-            dep_15=str(trans_after_final_mod[14]["deposit"]),
+            wth_15=str(self.convrt_val(str(trans_after_final_mod[14]["withdraw"]))),
+            dep_15=str(self.convrt_val(str(trans_after_final_mod[14]["deposit"]))),
             dt_15=str(trans_after_final_mod[14]["Date"]),
             blnc_15=str(trans_after_final_mod[14]["balance"]),
             # *******************************************
             # ******************************************
             des_16=str(trans_after_final_mod[15]["description"][:15]),
-            wth_16=str(trans_after_final_mod[15]["withdraw"]),
-            dep_16=str(trans_after_final_mod[15]["deposit"]),
+            wth_16=str(self.convrt_val(str(trans_after_final_mod[15]["withdraw"]))),
+            dep_16=str(self.convrt_val(str(trans_after_final_mod[15]["deposit"]))),
             dt_16=str(trans_after_final_mod[15]["Date"]),
             blnc_16=str(trans_after_final_mod[15]["balance"]),
             # *******************************************
             # ******************************************
             des_17=str(trans_after_final_mod[16]["description"][:15]),
-            wth_17=str(trans_after_final_mod[16]["withdraw"]),
-            dep_17=str(trans_after_final_mod[16]["deposit"]),
+            wth_17=str(self.convrt_val(str(trans_after_final_mod[16]["withdraw"]))),
+            dep_17=str(self.convrt_val(str(trans_after_final_mod[16]["deposit"]))),
             dt_17=str(trans_after_final_mod[16]["Date"]),
             blnc_17=str(trans_after_final_mod[16]["balance"]),
             # *******************************************
             # ******************************************
             des_18=str(trans_after_final_mod[17]["description"][:15]),
-            wth_18=str(trans_after_final_mod[17]["withdraw"]),
-            dep_18=str(trans_after_final_mod[17]["deposit"]),
+            wth_18=str(self.convrt_val(str(trans_after_final_mod[17]["withdraw"]))),
+            dep_18=str(self.convrt_val(str(trans_after_final_mod[17]["deposit"]))),
             dt_18=str(trans_after_final_mod[17]["Date"]),
             blnc_18=str(trans_after_final_mod[17]["balance"]),
             # *******************************************
             # ******************************************
             des_19=str(trans_after_final_mod[18]["description"][:15]),
-            wth_19=str(trans_after_final_mod[18]["withdraw"]),
-            dep_19=str(trans_after_final_mod[18]["deposit"]),
+            wth_19=str(self.convrt_val(str(trans_after_final_mod[18]["withdraw"]))),
+            dep_19=str(self.convrt_val(str(trans_after_final_mod[18]["deposit"]))),
             dt_19=str(trans_after_final_mod[18]["Date"]),
             blnc_19=str(trans_after_final_mod[18]["balance"]),
             # *******************************************
             # ******************************************
             des_20=str(trans_after_final_mod[19]["description"][:15]),
-            wth_20=str(trans_after_final_mod[19]["withdraw"]),
-            dep_20=str(trans_after_final_mod[19]["deposit"]),
+            wth_20=str(self.convrt_val(str(trans_after_final_mod[19]["withdraw"]))),
+            dep_20=str(self.convrt_val(str(trans_after_final_mod[19]["deposit"]))),
             dt_20=str(trans_after_final_mod[19]["Date"]),
             blnc_20=str(trans_after_final_mod[19]["balance"]),
             # *******************************************
             # ******************************************
             des_21=str(trans_after_final_mod[20]["description"][:15]),
-            wth_21=str(trans_after_final_mod[20]["withdraw"]),
-            dep_21=str(trans_after_final_mod[20]["deposit"]),
+            wth_21=str(self.convrt_val(str(trans_after_final_mod[20]["withdraw"]))),
+            dep_21=str(self.convrt_val(str(trans_after_final_mod[20]["deposit"]))),
             dt_21=str(trans_after_final_mod[20]["Date"]),
             blnc_21=str(trans_after_final_mod[20]["balance"]),
             # *******************************************
             # ******************************************
             des_22=str(trans_after_final_mod[21]["description"][:15]),
-            wth_22=str(trans_after_final_mod[21]["withdraw"]),
-            dep_22=str(trans_after_final_mod[21]["deposit"]),
+            wth_22=str(self.convrt_val(str(trans_after_final_mod[21]["withdraw"]))),
+            dep_22=str(self.convrt_val(str(trans_after_final_mod[21]["deposit"]))),
             dt_22=str(trans_after_final_mod[21]["Date"]),
             blnc_22=str(trans_after_final_mod[21]["balance"]),
             # *******************************************
             # ******************************************
             des_23=str(trans_after_final_mod[22]["description"][:15]),
-            wth_23=str(trans_after_final_mod[22]["withdraw"]),
-            dep_23=str(trans_after_final_mod[22]["deposit"]),
+            wth_23=str(self.convrt_val(str(trans_after_final_mod[22]["withdraw"]))),
+            dep_23=str(self.convrt_val(str(trans_after_final_mod[22]["deposit"]))),
             dt_23=str(trans_after_final_mod[22]["Date"]),
             blnc_23=str(trans_after_final_mod[22]["balance"]),
             # *******************************************
             # ******************************************
             des_24=str(trans_after_final_mod[23]["description"][:15]),
-            wth_24=str(trans_after_final_mod[23]["withdraw"]),
-            dep_24=str(trans_after_final_mod[23]["deposit"]),
+            wth_24=str(self.convrt_val(str(trans_after_final_mod[23]["withdraw"]))),
+            dep_24=str(self.convrt_val(str(trans_after_final_mod[23]["deposit"]))),
             dt_24=str(trans_after_final_mod[23]["Date"]),
             blnc_24=str(trans_after_final_mod[23]["balance"]),
             # *******************************************
             # ******************************************
             des_25=str(trans_after_final_mod[24]["description"][:15]),
-            wth_25=str(trans_after_final_mod[24]["withdraw"]),
-            dep_25=str(trans_after_final_mod[24]["deposit"]),
+            wth_25=str(self.convrt_val(str(trans_after_final_mod[24]["withdraw"]))),
+            dep_25=str(self.convrt_val(str(trans_after_final_mod[24]["deposit"]))),
             dt_25=str(trans_after_final_mod[24]["Date"]),
             blnc_25=str(trans_after_final_mod[24]["balance"]),
             # *******************************************
             # ******************************************
             des_26=str(trans_after_final_mod[25]["description"][:15]),
-            wth_26=str(trans_after_final_mod[25]["withdraw"]),
-            dep_26=str(trans_after_final_mod[25]["deposit"]),
+            wth_26=str(self.convrt_val(str(trans_after_final_mod[25]["withdraw"]))),
+            dep_26=str(self.convrt_val(str(trans_after_final_mod[25]["deposit"]))),
             dt_26=str(trans_after_final_mod[25]["Date"]),
             blnc_26=str(trans_after_final_mod[25]["balance"]),
             # *******************************************
             # ******************************************
             des_27=str(trans_after_final_mod[26]["description"][:15]),
-            wth_27=str(trans_after_final_mod[26]["withdraw"]),
-            dep_27=str(trans_after_final_mod[26]["deposit"]),
+            wth_27=str(self.convrt_val(str(trans_after_final_mod[26]["withdraw"]))),
+            dep_27=str(self.convrt_val(str(trans_after_final_mod[26]["deposit"]))),
             dt_27=str(trans_after_final_mod[26]["Date"]),
             blnc_27=str(trans_after_final_mod[26]["balance"]),
             # *******************************************
             # ******************************************
             des_28=str(trans_after_final_mod[27]["description"][:15]),
-            wth_28=str(trans_after_final_mod[27]["withdraw"]),
-            dep_28=str(trans_after_final_mod[27]["deposit"]),
+            wth_28=str(self.convrt_val(str(trans_after_final_mod[27]["withdraw"]))),
+            dep_28=str(self.convrt_val(str(trans_after_final_mod[27]["deposit"]))),
             dt_28=str(trans_after_final_mod[27]["Date"]),
             blnc_28=str(trans_after_final_mod[27]["balance"]),
             # *******************************************
             # ******************************************
             des_29=str(trans_after_final_mod[28]["description"][:15]),
-            wth_29=str(trans_after_final_mod[28]["withdraw"]),
-            dep_29=str(trans_after_final_mod[28]["deposit"]),
+            wth_29=str(self.convrt_val(str(trans_after_final_mod[28]["withdraw"]))),
+            dep_29=str(self.convrt_val(str(trans_after_final_mod[28]["deposit"]))),
             dt_29=str(trans_after_final_mod[28]["Date"]),
             blnc_29=str(trans_after_final_mod[28]["balance"]),
             # *******************************************
             # ******************************************
             des_30=str(trans_after_final_mod[29]["description"][:15]),
-            wth_30=str(trans_after_final_mod[29]["withdraw"]),
-            dep_30=str(trans_after_final_mod[29]["deposit"]),
+            wth_30=str(self.convrt_val(str(trans_after_final_mod[29]["withdraw"]))),
+            dep_30=str(self.convrt_val(str(trans_after_final_mod[29]["deposit"]))),
             dt_30=str(trans_after_final_mod[29]["Date"]),
             blnc_30=str(trans_after_final_mod[29]["balance"]),
             # *******************************************
@@ -1720,7 +1770,13 @@ class TD_Document:
                 total_deposits,
                 total_transactions,
             )
-        
+            
+        # more_docs = str(input("Do you want to create more documents : Yes or No "))
+        # if more_docs.lower() == "yes":
+        #     options_feature(global_name, global_employee_address)
+        # else:
+        #     import sys
+        #     sys.exit()
 
 
 #######################################################################################################################################
@@ -1751,3 +1807,47 @@ if __name__ == "__main__":
 
 
     options_feature(global_name, global_employee_address)
+    # document_type = input(
+    #     """ Please Enter Which Document You want to Create, Select Options 
+    #                      1 ) PayStub 
+    #                      2 ) Proof Of SIN 
+    #                      3 ) T4 Document
+    #                      4 ) Proof Of Enrollment
+    #                      5 ) TD Document
+    #                      6 ) All
+    #                     """
+    # )
+    # print("***************************")
+    # print("***************************")
+
+    # if int(document_type) == 1:
+    #     pay_sub_object = PayStubs()
+    #     pay_sub_object.paystub_wrapper(name, employee_address)
+    # elif int(document_type) == 2:
+    #     sin_object = Proof_Of_SIN()
+    #     sin_object.SIN_Wrapper(name, employee_address)
+    # elif int(document_type) == 3:
+    #     TFour_object = TFour()
+    #     TFour_object.T4_Wrapper(name, employee_address)
+    # elif int(document_type) == 4:
+    #     poof_of_enrl = Proof_Of_Enrollment()
+    #     poof_of_enrl.pof_wrapper(
+    #         name,
+    #     )
+    # elif int(document_type) == 5:
+    #     td_clas = TD_Document()
+    #     td_clas.TD_wrapper(name, employee_address)
+    # elif int(document_type) == 6:
+    #     pay_sub_object = PayStubs()
+    #     sin_object = Proof_Of_SIN()
+    #     TFour_object = TFour()
+    #     poof_of_enrl = Proof_Of_Enrollment()
+    #     td_clas = TD_Document()
+
+    #     pay_sub_object.paystub_wrapper(name, employee_address)
+    #     sin_object.SIN_Wrapper(name, employee_address)
+    #     TFour_object.T4_Wrapper(name, employee_address)
+    #     poof_of_enrl.pof_wrapper(
+    #         name,
+    #     )
+    #     td_clas.TD_wrapper(name, employee_address)
