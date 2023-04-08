@@ -43,6 +43,48 @@ def values_for_paystub(year):
             "last_year_to_date": 0,
         }
         return all_vars
+    
+    elif year == "2021":
+        all_vars = {
+            "federal_first": 15,
+            "province_first": 5.05,
+            "federal_second": 20.5,
+            "province_second": 9.15,
+            "federal_three": 26,
+            "province_three": 11.16,
+            "federal_four": 29,
+            "province_four": 12.16,
+            "federal_five": 33,
+            "province_five": 13.16,
+            
+            "EI_Rate": 1.58,
+            "CPP_Rate": 5.45,
+            "EI_Maximum_Deduction": 889.54,
+            "CPP_Maximum_Deduction": 3166.45,
+            "last_year_to_date": 0,
+        }
+        return all_vars
+
+    elif year == "2020":
+        all_vars = {
+            "federal_first": 15,
+            "province_first": 5.05,
+            "federal_second": 20.5,
+            "province_second": 9.15,
+            "federal_three": 26,
+            "province_three": 11.16,
+            "federal_four": 29,
+            "province_four": 12.16,
+            "federal_five": 33,
+            "province_five": 13.16,
+            
+            "EI_Rate": 1.58,
+            "CPP_Rate": 5.25,
+            "EI_Maximum_Deduction": 856.36,
+            "CPP_Maximum_Deduction": 2898.00,
+            "last_year_to_date": 0,
+        }
+        return all_vars
 
 
 EI_Rates = [

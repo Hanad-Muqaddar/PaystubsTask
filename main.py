@@ -20,7 +20,7 @@ from Constants import values_for_paystub
 global_testing_var = 0
 
 
-federal_first = 0
+federal_first = ""
 province_first = ""
 federal_second = ""
 province_second = ""
@@ -61,11 +61,13 @@ def making_address(address):
     address_2_f = " ".join(address_2)
     return address_1_f, address_2_f
 
+
 # New Feature
 ###########################################################################################################################################
 ###########################################################################################################################################
 ###########################################################################################################################################
 ###########################################################################################################################################
+
 
 def options_feature(name, employee_address):
     selected_option = input(
@@ -119,13 +121,16 @@ def options_feature(name, employee_address):
 
     if int(selected_option) == 2:
         import sys
+
         print("Thanks for using this. GoodBye")
         sys.exit()
+
 
 ############################################################################################################################################
 ############################################################################################################################################
 ############################################################################################################################################
 ############################################################################################################################################
+
 
 class PayStubs:
 
@@ -512,40 +517,49 @@ class PayStubs:
 
                 new_year_to_send = f_period_ending_date.split("/")[-1]
                 important_values_for_paystub = values_for_paystub(new_year_to_send)
-                
+
                 global federal_first
-                federal_first = important_values_for_paystub['federal_first']
+                federal_first = important_values_for_paystub["federal_first"]
                 global province_first
-                province_first = important_values_for_paystub['province_first']
+                province_first = important_values_for_paystub["province_first"]
                 global federal_second
-                federal_second = important_values_for_paystub['federal_second']
+                federal_second = important_values_for_paystub["federal_second"]
                 global province_second
-                province_second = important_values_for_paystub['province_second']
+                province_second = important_values_for_paystub["province_second"]
                 global federal_three
-                federal_three = important_values_for_paystub['federal_three']
+                federal_three = important_values_for_paystub["federal_three"]
                 global province_three
-                province_three = important_values_for_paystub['province_three']
+                province_three = important_values_for_paystub["province_three"]
                 global federal_four
-                federal_four = important_values_for_paystub['federal_four']
+                federal_four = important_values_for_paystub["federal_four"]
                 global province_four
-                province_four = important_values_for_paystub['province_four']
+                province_four = important_values_for_paystub["province_four"]
                 global federal_five
-                federal_five = important_values_for_paystub['federal_five']
+                federal_five = important_values_for_paystub["federal_five"]
                 global province_five
-                province_five = important_values_for_paystub['province_five']
+                province_five = important_values_for_paystub["province_five"]
                 global EI_Rate
-                EI_Rate = important_values_for_paystub['EI_Rate']
+                EI_Rate = important_values_for_paystub["EI_Rate"]
                 global CPP_Rate
-                CPP_Rate = important_values_for_paystub['CPP_Rate']
+                CPP_Rate = important_values_for_paystub["CPP_Rate"]
                 global EI_Maximum_Deduction
-                EI_Maximum_Deduction = important_values_for_paystub['EI_Maximum_Deduction']
+                EI_Maximum_Deduction = important_values_for_paystub[
+                    "EI_Maximum_Deduction"
+                ]
                 global CPP_Maximum_Deduction
-                CPP_Maximum_Deduction = important_values_for_paystub['CPP_Maximum_Deduction']
+                CPP_Maximum_Deduction = important_values_for_paystub[
+                    "CPP_Maximum_Deduction"
+                ]
                 # last_year_to_date = important_values_for_paystub['last_year_to_date']
 
                 print("***************************")
                 print("***************************")
-                hours = random.randint(75, 80)
+                # hours = random.randint(75, 80)
+                hours = int(
+                    input(
+                        "Please enter the number of hours employee has worked like (50 0r 60):"
+                    )
+                )
                 gross_total = hours * rate
                 if i == 0:
                     year_to_date = self.calculate_year_to_date(
@@ -670,7 +684,6 @@ class Proof_Of_SIN:
         )
 
         self.making_sin_pdf_file(name, employee_address, global_sin_number)
-    
 
 
 class Proof_Of_Enrollment:
@@ -864,13 +877,18 @@ class TFour:
 
     def breaking_number(self, num):
         a = str(num).split(".")
-        if a[-1] == "0":
+        if len(a[-1]) == 1:
+            before_point = a[0]
+            after_point = str(a[-1]) + "0"
+            return before_point, after_point
+        elif len(a) == 1:
             before_point = a[0]
             after_point = "00"
             return before_point, after_point
-        before_point = a[0]
-        after_point = a[-1][:2]
-        return before_point, after_point
+        else:
+            before_point = a[0]
+            after_point = a[-1][:2]
+            return before_point, after_point
 
     def percentage(self, percent, whole):
         return (percent * whole) / 100.0
@@ -943,7 +961,39 @@ class TFour:
         address_1, address_2 = self.making_address(employee_address_i)
         first_name, last_name = self.making_fist_last_name(name_i)
         sin1, sin2, sin3 = self.making_sin(sin_number_i)
-        year_number = str(t4_year_input_i)[2:]
+        # year_number = str(t4_year_input_i)[2:]
+        year_number = str(t4_year_input_i)
+
+        important_values_for_paystub = values_for_paystub(year_number)
+
+        global federal_first
+        federal_first = important_values_for_paystub["federal_first"]
+        global province_first
+        province_first = important_values_for_paystub["province_first"]
+        global federal_second
+        federal_second = important_values_for_paystub["federal_second"]
+        global province_second
+        province_second = important_values_for_paystub["province_second"]
+        global federal_three
+        federal_three = important_values_for_paystub["federal_three"]
+        global province_three
+        province_three = important_values_for_paystub["province_three"]
+        global federal_four
+        federal_four = important_values_for_paystub["federal_four"]
+        global province_four
+        province_four = important_values_for_paystub["province_four"]
+        global federal_five
+        federal_five = important_values_for_paystub["federal_five"]
+        global province_five
+        province_five = important_values_for_paystub["province_five"]
+        global EI_Rate
+        EI_Rate = important_values_for_paystub["EI_Rate"]
+        global CPP_Rate
+        CPP_Rate = important_values_for_paystub["CPP_Rate"]
+        global EI_Maximum_Deduction
+        EI_Maximum_Deduction = important_values_for_paystub["EI_Maximum_Deduction"]
+        global CPP_Maximum_Deduction
+        CPP_Maximum_Deduction = important_values_for_paystub["CPP_Maximum_Deduction"]
 
         paystub_object = PayStubs()
         income_tax, percntage = paystub_object.total_incom_tax_calculator_year_to_date(
@@ -1211,7 +1261,7 @@ class TD_Document:
             if j["deposit"] != "":
                 total = total + float(j["deposit"])
         return total
-    
+
     def convrt_val(self, text):
         first_step = text.split(".")
         if len(first_step) == 2:
@@ -1231,27 +1281,27 @@ class TD_Document:
         new_trans = []
         for i in trans:
             try:
-                i['withdraw'] = self.convrt_val(i['withdraw'])
+                i["withdraw"] = self.convrt_val(i["withdraw"])
             except:
                 pass
             try:
-                i['deposit'] = self.convrt_val(i['deposit'])
+                i["deposit"] = self.convrt_val(i["deposit"])
             except:
                 pass
             new_trans.append(i)
         return new_trans
-    
+
     def another_final_update_on_td(self, trans):
         new_trans = []
         for i in trans:
             try:
-                if i['withdraw'] == ".00":
-                    i['withdraw'] = ""
+                if i["withdraw"] == ".00":
+                    i["withdraw"] = ""
             except:
                 pass
             try:
-                if i['deposit'] == ".00":
-                    i['deposit'] = ""
+                if i["deposit"] == ".00":
+                    i["deposit"] = ""
             except:
                 pass
             new_trans.append(i)
@@ -1332,7 +1382,6 @@ class TD_Document:
 
         return all_transactions, global_balance
 
-    
     def making_TD_pdf_file_for_thirty_trans(
         self,
         b_1_i,
@@ -1376,7 +1425,7 @@ class TD_Document:
                 f_trans["withdraw"] = self.comma_seprated(float(f_trans["withdraw"]))
             except:
                 pass
-        
+
         trans_after_final_mod = self.final_update_on_td(trans_after_final_mod)
         trans_after_final_mod = self.another_final_update_on_td(trans_after_final_mod)
 
@@ -1720,7 +1769,6 @@ class TD_Document:
                 total_deposits,
                 total_transactions,
             )
-        
 
 
 #######################################################################################################################################
@@ -1748,6 +1796,5 @@ if __name__ == "__main__":
     print("***************************")
     print("***************************")
     global_sin_number = input("Please Enter SIN number : ").upper()
-
 
     options_feature(global_name, global_employee_address)
