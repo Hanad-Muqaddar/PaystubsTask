@@ -1,4 +1,4 @@
-from __future__ import print_function
+# from __future__ import print_function
 from mailmerge import MailMerge
 import dateparser
 import os
@@ -1835,6 +1835,8 @@ class PayStubChild(PayStubs):
         cpp_tax_i,
         Ei_tax_i,
         income_tax_i,
+        current_total_i,
+        total_y_t_d_calculations_i,
     ):
         template = "PaystubTwo.docx"
         document = MailMerge(template)
@@ -1871,6 +1873,8 @@ class PayStubChild(PayStubs):
             cpp=self.format_number(str(cpp_tax_i)),
             ei=self.format_number(str(Ei_tax_i)),
             inc=self.format_number(str(income_tax_i)),
+            cur_net = self.format_number(current_total_i),
+            y_td_net = self.format_number(total_y_t_d_calculations_i)
         )
 
         document.write("Output_File.docx")
@@ -1961,6 +1965,16 @@ class PayStubChild(PayStubs):
         Ei_tax = self.EI_calculator_Period(gross_total, year_to_date_ei)
         cpp_tax = self.CPP_Calculator_Period(gross_total, year_to_date_cpp)
 
+        # This is the total of current calculations
+        cur_tot1 = float(income_tax) + float(Ei_tax) + float(cpp_tax)
+        current_total = float(gross_total) - cur_tot1
+
+
+        # This is year to date net calculations
+        y_t_d_net_cal1 = float(year_to_date_incom_tax) + float(year_to_date_cpp) + float(year_to_date_ei)
+        total_y_t_d_calculations = float(self.return_float(year_to_date_for_paystub2)) - y_t_d_net_cal1
+
+
         self.making_paystub_two_document(
             e_name,
             e_address,
@@ -1977,6 +1991,8 @@ class PayStubChild(PayStubs):
             cpp_tax,
             Ei_tax,
             income_tax,
+            current_total,
+            total_y_t_d_calculations
         )
 
 
@@ -2014,3 +2030,4 @@ if __name__ == "__main__":
 
 # 57-1478 ADELAIDE ST N
 # LONDON, ON N5X 3Y1
+
