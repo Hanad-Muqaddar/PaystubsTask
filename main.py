@@ -95,6 +95,7 @@ def options_feature(name, employee_address):
                     """Which Document You want to Create 
                 a) Paystub 1
                 b) Paystub 2
+                c) Paystub 3
                 """
                 )
                 if str(slection_number) == "a":
@@ -103,6 +104,9 @@ def options_feature(name, employee_address):
                 elif str(slection_number) == "b":
                     child_obj = PayStubChild()
                     child_obj.paystub_child_wrapper(name, employee_address)
+                elif str(slection_number) == "c":
+                    pay_stub_three_obj = PayStubChildONE()
+                    pay_stub_three_obj.paystub_child_wrapper(name, employee_address)
             elif number == 2:
                 sin_object = Proof_Of_SIN()
                 sin_object.SIN_Wrapper(name, employee_address)
@@ -1781,6 +1785,7 @@ class TD_Document:
 
 
 class PayStubChild(PayStubs):
+
     def date_range(self, input_date):
         # convert input string to datetime object
         date_obj = datetime.strptime(input_date, "%b %d %Y")
@@ -1803,7 +1808,7 @@ class PayStubChild(PayStubs):
             start_day = datetime(date_obj.year, date_obj.month, 1)
             end_day = datetime(date_obj.year, date_obj.month, 15)
             if start_day.weekday() >= 4:
-                end_day = datetime(date_obj.year, date_obj.month, 14)
+                end_day = datetime(date_obj.year, date_obj.month, 15)
 
         # format dates as strings in desired format
         start_str = start_day.strftime("%Y-%m-%d")
@@ -1837,6 +1842,9 @@ class PayStubChild(PayStubs):
         income_tax_i,
         current_total_i,
         total_y_t_d_calculations_i,
+        cur_tot1_i,
+        y_t_d_net_cal1_i,
+        paystub_number_i,
     ):
         template = "PaystubTwo.docx"
         document = MailMerge(template)
@@ -1847,11 +1855,11 @@ class PayStubChild(PayStubs):
         final_cheque_date = self.checque_date(cheque_date_i)
 
         document.merge(
-            employer_name=str(global_employer_name).title(),
-            employer_ad_1=str(global_employer_address_1).title(),
+            employer_name=str(global_employer_name).upper(),
+            employer_ad_1=str(global_employer_address_1).upper(),
             employer_ad_2=str(global_employer_address_2).upper(),
-            employer_name_2=str(global_employer_name).title(),
-            employer_add_3=str(global_employer_address_1).title(),
+            employer_name_2=str(global_employer_name).upper(),
+            employer_add_3=str(global_employer_address_1).upper(),
             employer_add_4=str(global_employer_address_2).upper(),
             employee_name=str(e_name_i).upper(),
             employee_name_1=str(e_name_i).upper(),
@@ -1873,12 +1881,14 @@ class PayStubChild(PayStubs):
             cpp=self.format_number(str(cpp_tax_i)),
             ei=self.format_number(str(Ei_tax_i)),
             inc=self.format_number(str(income_tax_i)),
-            cur_net = self.format_number(current_total_i),
-            y_td_net = self.format_number(total_y_t_d_calculations_i)
+            cur_net=self.format_number(current_total_i),
+            y_td_net=self.format_number(total_y_t_d_calculations_i),
+            cur_total=self.format_number(str(cur_tot1_i)),
+            y_td_tot=self.format_number(str(y_t_d_net_cal1_i)),
         )
 
         document.write("Output_File.docx")
-        self.convert_to_pdf(f"PayStubTwo")
+        self.convert_to_pdf(f"PayStubTwo-{paystub_number_i}")
         try:
             os.remove(os.path.abspath("Output_File.docx"))
         except:
@@ -1896,104 +1906,412 @@ class PayStubChild(PayStubs):
             "************************************************************************************"
         )
 
-        occupation = input("Please Enter Occupation : ")
-        print("*" * 100)
-        print("*" * 100)
-        pay_period = input("Please enter date for Pay Period (Mar 01 2023) : ")
-        print("*" * 100)
-        print("*" * 100)
-        cheque_date = input("Please Enter Cheque date (Feb 11 2023): ")
-        print("*" * 100)
-        print("*" * 100)
-        number_of_hours = int(input("Please Enter Number of Hours : "))
-        print("*" * 100)
-        print("*" * 100)
         rate_per_hour = int(input("Please Enter Rate per Hour : "))
         print("*" * 100)
         print("*" * 100)
 
-        new_year_to_send = pay_period.split(" ")[-1]
-        important_values_for_paystub = values_for_paystub(new_year_to_send)
+        occupation = input("Please Enter Occupation : ")
+        print("*" * 100)
+        print("*" * 100)
 
-        global federal_first
-        federal_first = important_values_for_paystub["federal_first"]
-        global province_first
-        province_first = important_values_for_paystub["province_first"]
-        global federal_second
-        federal_second = important_values_for_paystub["federal_second"]
-        global province_second
-        province_second = important_values_for_paystub["province_second"]
-        global federal_three
-        federal_three = important_values_for_paystub["federal_three"]
-        global province_three
-        province_three = important_values_for_paystub["province_three"]
-        global federal_four
-        federal_four = important_values_for_paystub["federal_four"]
-        global province_four
-        province_four = important_values_for_paystub["province_four"]
-        global federal_five
-        federal_five = important_values_for_paystub["federal_five"]
-        global province_five
-        province_five = important_values_for_paystub["province_five"]
-        global EI_Rate
-        EI_Rate = important_values_for_paystub["EI_Rate"]
-        global CPP_Rate
-        CPP_Rate = important_values_for_paystub["CPP_Rate"]
-        global EI_Maximum_Deduction
-        EI_Maximum_Deduction = important_values_for_paystub["EI_Maximum_Deduction"]
-        global CPP_Maximum_Deduction
-        CPP_Maximum_Deduction = important_values_for_paystub["CPP_Maximum_Deduction"]
+        number_of_pay_stubs = input(
+            "Please enter, how many number of paystubs you want to create: "
+        )
+        if int(number_of_pay_stubs) == 0:
+            print("You have enterd 0. So i am not creating any paystub. Thanks")
+            sys.exit()
+        elif int(number_of_pay_stubs) > 0:
+            for paystub_number in range(int(number_of_pay_stubs)):
+                
+                pay_period = input("Please enter date for Pay Period (Mar 01 2023) : ")
+                print("*" * 100)
+                print("*" * 100)
+                cheque_date = input("Please Enter Cheque date (Feb 11 2023): ")
+                print("*" * 100)
+                print("*" * 100)
+                number_of_hours = int(input("Please Enter Number of Hours : "))
+                print("*" * 100)
+                print("*" * 100)
+                
+                new_year_to_send = pay_period.split(" ")[-1]
+                important_values_for_paystub = values_for_paystub(new_year_to_send)
 
-        gross_total = number_of_hours * rate_per_hour
+                global federal_first
+                federal_first = important_values_for_paystub["federal_first"]
+                global province_first
+                province_first = important_values_for_paystub["province_first"]
+                global federal_second
+                federal_second = important_values_for_paystub["federal_second"]
+                global province_second
+                province_second = important_values_for_paystub["province_second"]
+                global federal_three
+                federal_three = important_values_for_paystub["federal_three"]
+                global province_three
+                province_three = important_values_for_paystub["province_three"]
+                global federal_four
+                federal_four = important_values_for_paystub["federal_four"]
+                global province_four
+                province_four = important_values_for_paystub["province_four"]
+                global federal_five
+                federal_five = important_values_for_paystub["federal_five"]
+                global province_five
+                province_five = important_values_for_paystub["province_five"]
+                global EI_Rate
+                EI_Rate = important_values_for_paystub["EI_Rate"]
+                global CPP_Rate
+                CPP_Rate = important_values_for_paystub["CPP_Rate"]
+                global EI_Maximum_Deduction
+                EI_Maximum_Deduction = important_values_for_paystub[
+                    "EI_Maximum_Deduction"
+                ]
+                global CPP_Maximum_Deduction
+                CPP_Maximum_Deduction = important_values_for_paystub[
+                    "CPP_Maximum_Deduction"
+                ]
 
-        year_to_date_for_paystub2 = self.calculate_year_to_date(
-            number_of_hours, rate_per_hour, pay_period
+                gross_total = number_of_hours * rate_per_hour
+                
+                if paystub_number == 0:
+                    year_to_date_for_paystub2 = self.calculate_year_to_date(
+                        number_of_hours, rate_per_hour, pay_period
+                    )
+                    last_year_to_date = year_to_date_for_paystub2
+                elif paystub_number > 0:
+                    year_to_date_for_paystub2 = self.return_float(last_year_to_date) + gross_total
+                    year_to_date_for_paystub2 = self.comma_seprated(year_to_date_for_paystub2)
+                    last_year_to_date = year_to_date_for_paystub2
+
+                y_t_date_input = self.return_float(year_to_date_for_paystub2)
+
+                (
+                    year_to_date_incom_tax,
+                    total_percentage_for_monthly,
+                ) = self.total_incom_tax_calculator_year_to_date(y_t_date_input)
+                year_to_date_ei = self.EI_calculator_year_to_date(y_t_date_input)
+                year_to_date_cpp = self.CPP_Calculator_year_to_date(y_t_date_input)
+
+                income_tax = self.total_incom_tax_calculator_period(
+                    gross_total, total_percentage_for_monthly
+                )
+                Ei_tax = self.EI_calculator_Period(gross_total, year_to_date_ei)
+                cpp_tax = self.CPP_Calculator_Period(gross_total, year_to_date_cpp)
+
+                # This is the total of current calculations
+                cur_tot1 = float(income_tax) + float(Ei_tax) + float(cpp_tax)
+                current_total = float(gross_total) - cur_tot1
+
+                # This is year to date net calculations
+                y_t_d_net_cal1 = (
+                    float(year_to_date_incom_tax)
+                    + float(year_to_date_cpp)
+                    + float(year_to_date_ei)
+                )
+                total_y_t_d_calculations = (
+                    float(self.return_float(year_to_date_for_paystub2)) - y_t_d_net_cal1
+                )
+
+                self.making_paystub_two_document(
+                    e_name,
+                    e_address,
+                    occupation,
+                    pay_period,
+                    cheque_date,
+                    number_of_hours,
+                    rate_per_hour,
+                    gross_total,
+                    year_to_date_for_paystub2,
+                    year_to_date_cpp,
+                    year_to_date_ei,
+                    year_to_date_incom_tax,
+                    cpp_tax,
+                    Ei_tax,
+                    income_tax,
+                    current_total,
+                    total_y_t_d_calculations,
+                    cur_tot1,
+                    y_t_d_net_cal1,
+                    paystub_number,
+                )
+
+
+class PayStubChildONE(PayStubs):
+    def date_range(self, input_date):
+        # convert input string to datetime object
+        date_obj = datetime.strptime(input_date, "%b %d %Y")
+
+        # calculate start and end dates based on input date
+        last_day = datetime(date_obj.year, date_obj.month, 1) + timedelta(days=31)
+        if last_day.month != date_obj.month:
+            end_day = last_day - timedelta(days=last_day.day - 15)
+        else:
+            end_day = datetime(date_obj.year, date_obj.month, 15)
+
+        if date_obj.day > 15:
+            start_day = datetime(date_obj.year, date_obj.month, 16)
+            next_month = date_obj.replace(day=28) + timedelta(days=4)
+            if next_month.month != date_obj.month:
+                end_day = datetime(next_month.year, next_month.month, 1) - timedelta(
+                    days=1
+                )
+        else:
+            start_day = datetime(date_obj.year, date_obj.month, 1)
+            end_day = datetime(date_obj.year, date_obj.month, 15)
+            if start_day.weekday() >= 4:
+                end_day = datetime(date_obj.year, date_obj.month, 14)
+
+        # format dates as strings in desired format
+        start_str = start_day.strftime("%Y-%m-%d")
+        end_str = end_day.strftime("%Y-%m-%d")
+
+        def manipulate_date(date):
+            date_obj = datetime.strptime(date, "%Y-%m-%d")
+            formatted_date = date_obj.strftime("%B %d, %Y")
+            return formatted_date
+
+        start_str = manipulate_date(start_str)
+        end_str = manipulate_date(end_str)
+
+        return start_str, end_str
+
+    def checque_date(self, input_str):
+        date_obj = datetime.strptime(input_str, "%b %d %Y")
+        date_obj = date_obj.strftime("%Y-%m-%d")
+        def manipulate_date(date):
+            date_obj = datetime.strptime(date, "%Y-%m-%d")
+            formatted_date = date_obj.strftime("%B %d, %Y")
+            return formatted_date
+        cheque_date = manipulate_date(date_obj)
+        return cheque_date
+
+    def format_number(self, num):
+        return "{:,.2f}".format(float(num))
+
+    def split_name(self, name):
+        e_name = name.split(" ")
+        first_name = e_name[0]
+        last_name = " ".join(e_name[1:])
+        return first_name, last_name
+
+    def making_paystub_two_document(
+        self,
+        e_name_i,
+        e_address_i,
+        # occupation_i,
+        pay_period_i,
+        cheque_date_i,
+        number_of_hours_i,
+        rate_per_hour_i,
+        gross_total_i,
+        year_to_date_for_paystub2_i,
+        year_to_date_cpp_i,
+        year_to_date_ei_i,
+        year_to_date_incom_tax_i,
+        cpp_tax_i,
+        Ei_tax_i,
+        income_tax_i,
+        current_total_i,
+        total_y_t_d_calculations_i,
+        cur_tot1_i,
+        y_t_d_net_cal1_i,
+        paystub_number_i,
+    ):
+        template = "PayStubThree.docx"
+        document = MailMerge(template)
+
+        td_object = TD_Document()
+        ad_1, ad_2 = td_object.making_address(e_address_i)
+        processed_pay_period_1, processed_pay_period_2 = self.date_range(pay_period_i)
+        final_cheque_date = self.checque_date(cheque_date_i)
+        first_name, last_name = self.split_name(e_name_i)
+
+        
+        ytd_hours_cal = float(self.return_float(year_to_date_for_paystub2_i)) / float(rate_per_hour_i)
+
+        document.merge(
+            employer_name=str(global_employer_name).upper(),
+            employer_ad_1=str(global_employer_address_1).upper(),
+            empad2=str(global_employer_address_2).upper(),
+            employer_name_2=str(global_employer_name).upper(),
+            # employer_add_3=str(global_employer_address_1).upper(),
+            # employer_add_4=str(global_employer_address_2).upper(),
+            f_name=str(first_name).upper(),
+            l_name=str(last_name).upper(),
+            # employee_name_1=str(e_name_i).upper(),
+            employee_add_1=str(ad_1).upper(),
+            employee_add_2=str(ad_2).upper(),
+            # emp_addr_3=str(e_address_i).upper(),
+            # occupation=str(occupation_i).upper(),
+            pay_period_1=str(processed_pay_period_1),
+            pay_period_2=str(processed_pay_period_2),
+            cheque=str(final_cheque_date),
+            qty=self.format_number(str(number_of_hours_i)),
+            rate=self.format_number(str(rate_per_hour_i)),
+            curr=self.format_number(str(gross_total_i)),
+            curr1=self.format_number(str(gross_total_i)),
+            y_t_d=self.format_number(
+                self.return_float(str(year_to_date_for_paystub2_i))
+            ),
+            y_t_d_1=self.format_number(
+                self.return_float(str(year_to_date_for_paystub2_i))
+            ),
+            ytd_cpp=self.format_number(str(year_to_date_cpp_i)),
+            ytd_ei=self.format_number(str(year_to_date_ei_i)),
+            ytd_in=self.format_number(str(year_to_date_incom_tax_i)),
+            cpp=self.format_number(str(cpp_tax_i)),
+            ei=self.format_number(str(Ei_tax_i)),
+            inc=self.format_number(str(income_tax_i)),
+            cur_net=self.format_number(current_total_i),
+            cur_net1=self.format_number(current_total_i),
+            cur_net2=self.format_number(current_total_i),
+            # y_td_net = self.format_number(total_y_t_d_calculations_i),
+            cur_total=self.format_number(str(cur_tot1_i)),
+            y_td_tot=self.format_number(str(y_t_d_net_cal1_i)),
+            ytd_hours = self.format_number(str(ytd_hours_cal)),
         )
 
-        y_t_date_input = self.return_float(year_to_date_for_paystub2)
+        document.write("Output_File.docx")
+        self.convert_to_pdf(f"PayStubThree-{paystub_number_i}")
+        try:
+            os.remove(os.path.abspath("Output_File.docx"))
+        except:
+            print("Error in Removing File.")
+        return
 
-        (
-            year_to_date_incom_tax,
-            total_percentage_for_monthly,
-        ) = self.total_incom_tax_calculator_year_to_date(y_t_date_input)
-        year_to_date_ei = self.EI_calculator_year_to_date(y_t_date_input)
-        year_to_date_cpp = self.CPP_Calculator_year_to_date(y_t_date_input)
-
-        income_tax = self.total_incom_tax_calculator_period(
-            gross_total, total_percentage_for_monthly
+    def paystub_child_wrapper(self, e_name, e_address):
+        print(
+            "************************************************************************************"
         )
-        Ei_tax = self.EI_calculator_Period(gross_total, year_to_date_ei)
-        cpp_tax = self.CPP_Calculator_Period(gross_total, year_to_date_cpp)
-
-        # This is the total of current calculations
-        cur_tot1 = float(income_tax) + float(Ei_tax) + float(cpp_tax)
-        current_total = float(gross_total) - cur_tot1
-
-
-        # This is year to date net calculations
-        y_t_d_net_cal1 = float(year_to_date_incom_tax) + float(year_to_date_cpp) + float(year_to_date_ei)
-        total_y_t_d_calculations = float(self.return_float(year_to_date_for_paystub2)) - y_t_d_net_cal1
-
-
-        self.making_paystub_two_document(
-            e_name,
-            e_address,
-            occupation,
-            pay_period,
-            cheque_date,
-            number_of_hours,
-            rate_per_hour,
-            gross_total,
-            year_to_date_for_paystub2,
-            year_to_date_cpp,
-            year_to_date_ei,
-            year_to_date_incom_tax,
-            cpp_tax,
-            Ei_tax,
-            income_tax,
-            current_total,
-            total_y_t_d_calculations
+        print(
+            "************************** We are Doing PayStub 3 ********************************"
         )
+        print(
+            "************************************************************************************"
+        )
+
+        rate_per_hour = int(input("Please Enter Rate per Hour : "))
+        print("*" * 100)
+        print("*" * 100)
+
+        number_of_pay_stubs = input(
+            "Please enter, how many number of paystubs you want to create: "
+        )
+        if int(number_of_pay_stubs) == 0:
+            print("You have enterd 0. So i am not creating any paystub. Thanks")
+            sys.exit()
+        elif int(number_of_pay_stubs) > 0:
+            for paystub_number in range(int(number_of_pay_stubs)):
+                # occupation = input("Please Enter Occupation : ")
+                # print("*" * 100)
+                # print("*" * 100)
+                pay_period = input("Please enter date for Pay Period (Mar 01 2023) : ")
+                print("*" * 100)
+                print("*" * 100)
+                cheque_date = input("Please Enter Cheque date (Feb 11 2023): ")
+                print("*" * 100)
+                print("*" * 100)
+                number_of_hours = int(input("Please Enter Number of Hours : "))
+                print("*" * 100)
+                print("*" * 100)
+    
+                new_year_to_send = pay_period.split(" ")[-1]
+                important_values_for_paystub = values_for_paystub(new_year_to_send)
+
+                global federal_first
+                federal_first = important_values_for_paystub["federal_first"]
+                global province_first
+                province_first = important_values_for_paystub["province_first"]
+                global federal_second
+                federal_second = important_values_for_paystub["federal_second"]
+                global province_second
+                province_second = important_values_for_paystub["province_second"]
+                global federal_three
+                federal_three = important_values_for_paystub["federal_three"]
+                global province_three
+                province_three = important_values_for_paystub["province_three"]
+                global federal_four
+                federal_four = important_values_for_paystub["federal_four"]
+                global province_four
+                province_four = important_values_for_paystub["province_four"]
+                global federal_five
+                federal_five = important_values_for_paystub["federal_five"]
+                global province_five
+                province_five = important_values_for_paystub["province_five"]
+                global EI_Rate
+                EI_Rate = important_values_for_paystub["EI_Rate"]
+                global CPP_Rate
+                CPP_Rate = important_values_for_paystub["CPP_Rate"]
+                global EI_Maximum_Deduction
+                EI_Maximum_Deduction = important_values_for_paystub[
+                    "EI_Maximum_Deduction"
+                ]
+                global CPP_Maximum_Deduction
+                CPP_Maximum_Deduction = important_values_for_paystub[
+                    "CPP_Maximum_Deduction"
+                ]
+
+                gross_total = number_of_hours * rate_per_hour
+
+                if paystub_number == 0:
+                    year_to_date_for_paystub2 = self.calculate_year_to_date(
+                        number_of_hours, rate_per_hour, pay_period
+                    )
+                    last_year_to_date = year_to_date_for_paystub2
+                elif paystub_number > 0:
+                    year_to_date_for_paystub2 = self.return_float(last_year_to_date) + gross_total
+                    year_to_date_for_paystub2 = self.comma_seprated(year_to_date_for_paystub2)
+                    last_year_to_date = year_to_date_for_paystub2
+
+                y_t_date_input = self.return_float(year_to_date_for_paystub2)
+
+                (
+                    year_to_date_incom_tax,
+                    total_percentage_for_monthly,
+                ) = self.total_incom_tax_calculator_year_to_date(y_t_date_input)
+                year_to_date_ei = self.EI_calculator_year_to_date(y_t_date_input)
+                year_to_date_cpp = self.CPP_Calculator_year_to_date(y_t_date_input)
+
+                income_tax = self.total_incom_tax_calculator_period(
+                    gross_total, total_percentage_for_monthly
+                )
+                Ei_tax = self.EI_calculator_Period(gross_total, year_to_date_ei)
+                cpp_tax = self.CPP_Calculator_Period(gross_total, year_to_date_cpp)
+
+                # This is the total of current calculations
+                cur_tot1 = float(income_tax) + float(Ei_tax) + float(cpp_tax)
+                current_total = float(gross_total) - cur_tot1
+
+                # This is year to date net calculations
+                y_t_d_net_cal1 = (
+                    float(year_to_date_incom_tax)
+                    + float(year_to_date_cpp)
+                    + float(year_to_date_ei)
+                )
+                total_y_t_d_calculations = (
+                    float(self.return_float(year_to_date_for_paystub2)) - y_t_d_net_cal1
+                )
+
+                self.making_paystub_two_document(
+                    e_name,
+                    e_address,
+                    # occupation,
+                    pay_period,
+                    cheque_date,
+                    number_of_hours,
+                    rate_per_hour,
+                    gross_total,
+                    year_to_date_for_paystub2,
+                    year_to_date_cpp,
+                    year_to_date_ei,
+                    year_to_date_incom_tax,
+                    cpp_tax,
+                    Ei_tax,
+                    income_tax,
+                    current_total,
+                    total_y_t_d_calculations,
+                    cur_tot1,
+                    y_t_d_net_cal1,
+                    paystub_number,
+                )
 
 
 #######################################################################################################################################
@@ -2030,4 +2348,3 @@ if __name__ == "__main__":
 
 # 57-1478 ADELAIDE ST N
 # LONDON, ON N5X 3Y1
-

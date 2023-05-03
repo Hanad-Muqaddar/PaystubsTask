@@ -1,4 +1,4 @@
-from __future__ import print_function
+# from __future__ import print_function
 from mailmerge import MailMerge
 import dateparser
 import os
@@ -9,29 +9,137 @@ import os
 from docx2pdf import convert
 from Constants import withdrawls
 from Constants import deposits
+from Constants import values_for_paystub
+from datetime import datetime, timedelta
 
-from Constants import federal_first
-from Constants import province_first
-from Constants import federal_second
-from Constants import province_second
-from Constants import federal_three
-from Constants import province_three
-from Constants import federal_four
-from Constants import province_four
-from Constants import federal_five
-from Constants import province_five
-from Constants import EI_Rate
-from Constants import CPP_Rate
-from Constants import EI_Maximum_Deduction
-from Constants import CPP_Maximum_Deduction
+# Variables For Paystub
+###########################################################################################################################################
+###########################################################################################################################################
+###########################################################################################################################################
+###########################################################################################################################################
 
-# Paystub Variables
+global_testing_var = 0
+
+
+federal_first = ""
+province_first = ""
+federal_second = ""
+province_second = ""
+federal_three = ""
+province_three = ""
+federal_four = ""
+province_four = ""
+federal_five = ""
+province_five = ""
+EI_Rate = ""
+CPP_Rate = ""
+EI_Maximum_Deduction = ""
+CPP_Maximum_Deduction = ""
+
+
+# Global Variables
 ###########################################################################################################################################
 ###########################################################################################################################################
 ###########################################################################################################################################
 ###########################################################################################################################################
 
 last_year_to_date = 0
+
+global_name = ""
+global_employee_address = ""
+global_employer_name = ""
+global_employer_address_1 = ""
+global_employer_address_2 = ""
+global_sin_number = ""
+
+
+def making_address(address):
+    address_list = address.split(" ")
+    middle = int(len(address_list) / 2)
+    address_1 = address_list[:middle]
+    address_2 = address_list[middle:]
+    address_1_f = " ".join(address_1)
+    address_2_f = " ".join(address_2)
+    return address_1_f, address_2_f
+
+
+# New Feature
+###########################################################################################################################################
+###########################################################################################################################################
+###########################################################################################################################################
+###########################################################################################################################################
+
+
+def options_feature(name, employee_address):
+    selected_option = input(
+        """Do you want to create Selected documents (1,2,3), Exit or Regular : Select Options,
+                    1 ) Selected
+                    2 ) Exit    
+                        """
+    )
+    if int(selected_option) == 1:
+        document_type = input(
+            """ Please Enter Which Document You want to Create, Select Options like this : (1,2,3)
+                            1 ) PayStub 
+                            2 ) Proof Of SIN 
+                            3 ) T4 Document
+                            4 ) Proof Of Enrollment
+                            5 ) TD Document
+                            6 ) ALL
+                            """
+        )
+        int_numbers = list(map(int, document_type.split(",")))
+        for number in int_numbers:
+            if number == 1:
+                slection_number = input(
+                    """Which Document You want to Create 
+                a) Paystub 1
+                b) Paystub 2
+                c) Paystub 3
+                """
+                )
+                if str(slection_number) == "a":
+                    pay_sub_object = PayStubs()
+                    pay_sub_object.paystub_wrapper(name, employee_address)
+                elif str(slection_number) == "b":
+                    child_obj = PayStubChild()
+                    child_obj.paystub_child_wrapper(name, employee_address)
+                elif str(slection_number) == "c":
+                    pay_stub_three_obj = PayStubChildONE()
+                    pay_stub_three_obj.paystub_child_wrapper(name, employee_address)
+            elif number == 2:
+                sin_object = Proof_Of_SIN()
+                sin_object.SIN_Wrapper(name, employee_address)
+            elif number == 3:
+                TFour_object = TFour()
+                TFour_object.T4_Wrapper(name, employee_address)
+            elif number == 4:
+                poof_of_enrl = Proof_Of_Enrollment()
+                poof_of_enrl.pof_wrapper(name)
+            elif number == 5:
+                td_clas = TD_Document()
+                td_clas.TD_wrapper(name, employee_address)
+            elif int(document_type) == 6:
+                pay_sub_object = PayStubs()
+                sin_object = Proof_Of_SIN()
+                TFour_object = TFour()
+                poof_of_enrl = Proof_Of_Enrollment()
+                td_clas = TD_Document()
+
+                pay_sub_object.paystub_wrapper(name, employee_address)
+                sin_object.SIN_Wrapper(name, employee_address)
+                TFour_object.T4_Wrapper(name, employee_address)
+                poof_of_enrl.pof_wrapper(
+                    name,
+                )
+                td_clas.TD_wrapper(name, employee_address)
+
+    if int(selected_option) == 2:
+        import sys
+
+        print("Thanks for using this. GoodBye")
+        sys.exit()
+
 
 ############################################################################################################################################
 ############################################################################################################################################
@@ -40,7 +148,6 @@ last_year_to_date = 0
 
 
 class PayStubs:
-
     Old_ei_Calculation = 0
     Max_Val_EI = False
     Old_cpp_Calculation = 0
@@ -306,9 +413,6 @@ class PayStubs:
         employee_address_i,
         hours_i,
         rate_i,
-        employer_name_i,
-        employer_address_1_i,
-        employer_address_2_i,
         g_total_i,
         account_number_i,
         year_to_date,
@@ -325,7 +429,6 @@ class PayStubs:
     ):
         template = "Hanad-ADP-PAYSTUBS.docx"
         document = MailMerge(template)
-        # print(document.get_merge_fields())
         if Ei_tax_i == 0:
             ei_tax_mod = "00.00"
         else:
@@ -348,12 +451,12 @@ class PayStubs:
             total=str(self.comma_seprated((round(g_total_i, 2)))),
             gp_total=str(self.comma_seprated((round(g_total_i, 2)))),
             employee_addr=str(employee_address_i).upper(),
-            employer_name=str(employer_name_i).upper(),
-            employer_addr_1=str(employer_address_1_i).upper(),
-            employer_addr_2=str(employer_address_2_i).upper(),
-            employer_name_1=str(employer_name_i).upper(),
-            employer_addr_1_1=str(employer_address_1_i).upper(),
-            employer_addr_2_2=str(employer_address_2_i).upper(),
+            employer_name=str(global_employer_name).upper(),
+            employer_addr_1=str(global_employer_address_1).upper(),
+            employer_addr_2=str(global_employer_address_2).upper(),
+            employer_name_1=str(global_employer_name).upper(),
+            employer_addr_1_1=str(global_employer_address_1).upper(),
+            employer_addr_2_2=str(global_employer_address_2).upper(),
             acn=str(account_number_i),
             y_to_d_1=str(year_to_date),
             y_to_d_2=str(year_to_date),
@@ -397,20 +500,16 @@ class PayStubs:
         return
 
     def paystub_wrapper(self, name, employee_address):
-        print("************************************************************************************")
-        print("********************** We are Doing Paystub Document *******************************")
-        print("************************************************************************************")
+        print(
+            "************************************************************************************"
+        )
+        print(
+            "********************** We are Doing Paystub Document *******************************"
+        )
+        print(
+            "************************************************************************************"
+        )
 
-        # pay_sub_object = PayStubs()
-        print("***************************")
-        print("***************************")
-        employer_name = input("Please enter Employer name: ")
-        print("***************************")
-        print("***************************")
-        employer_address_1 = input("Please enter Employer Address 1: ")
-        print("***************************")
-        print("***************************")
-        employer_address_2 = input("Please enter Employer Adress 2: ")
         rate = float(input("Please enter the rate which you decided: "))
         print("***************************")
         print("***************************")
@@ -429,9 +528,52 @@ class PayStubs:
             for i in range(int(number_of_pay_stubs)):
                 period_ending_date = input("Please Enter Period for Paystub: ")
                 f_period_ending_date = self.parse_and_make_date(period_ending_date)
+
+                new_year_to_send = f_period_ending_date.split("/")[-1]
+                important_values_for_paystub = values_for_paystub(new_year_to_send)
+
+                global federal_first
+                federal_first = important_values_for_paystub["federal_first"]
+                global province_first
+                province_first = important_values_for_paystub["province_first"]
+                global federal_second
+                federal_second = important_values_for_paystub["federal_second"]
+                global province_second
+                province_second = important_values_for_paystub["province_second"]
+                global federal_three
+                federal_three = important_values_for_paystub["federal_three"]
+                global province_three
+                province_three = important_values_for_paystub["province_three"]
+                global federal_four
+                federal_four = important_values_for_paystub["federal_four"]
+                global province_four
+                province_four = important_values_for_paystub["province_four"]
+                global federal_five
+                federal_five = important_values_for_paystub["federal_five"]
+                global province_five
+                province_five = important_values_for_paystub["province_five"]
+                global EI_Rate
+                EI_Rate = important_values_for_paystub["EI_Rate"]
+                global CPP_Rate
+                CPP_Rate = important_values_for_paystub["CPP_Rate"]
+                global EI_Maximum_Deduction
+                EI_Maximum_Deduction = important_values_for_paystub[
+                    "EI_Maximum_Deduction"
+                ]
+                global CPP_Maximum_Deduction
+                CPP_Maximum_Deduction = important_values_for_paystub[
+                    "CPP_Maximum_Deduction"
+                ]
+                # last_year_to_date = important_values_for_paystub['last_year_to_date']
+
                 print("***************************")
                 print("***************************")
-                hours = random.randint(75, 80)
+                # hours = random.randint(75, 80)
+                hours = int(
+                    input(
+                        "Please enter the number of hours employee has worked like (50 0r 60):"
+                    )
+                )
                 gross_total = hours * rate
                 if i == 0:
                     year_to_date = self.calculate_year_to_date(
@@ -462,16 +604,12 @@ class PayStubs:
                 net_pay = gross_total - income_tax - Ei_tax - cpp_tax
                 round_pay = round(net_pay, 2)
                 f_net_pay = f"{round_pay:,}"
-                # f_net_pay = pay_sub_object.jaugard_function(f_net_pay)
 
                 self.making_pdf_file(
                     name,
                     employee_address,
                     hours,
                     rate,
-                    employer_name,
-                    employer_address_1,
-                    employer_address_2,
                     gross_total,
                     account_number,
                     year_to_date,
@@ -506,15 +644,9 @@ class Proof_Of_SIN:
 
     def convert_to_pdf(self, filename):
         new_filename = filename + ".pdf"
-        # wdFormatPDF = 17
         in_file = os.path.abspath("Output_File_SIN.docx")
         out_file = os.path.abspath("Results/" + new_filename)
         convert(in_file, out_file)
-        # word = comtypes.client.CreateObject('Word.Application')
-        # doc = word.Documents.Open(in_file)
-        # doc.SaveAs(out_file, FileFormat=wdFormatPDF)
-        # doc.Close()
-        # word.Quit()
 
     def making_fist_last_name(self, name):
         name_list = name.split(" ")
@@ -555,16 +687,17 @@ class Proof_Of_SIN:
         return
 
     def SIN_Wrapper(self, name, employee_address):
-        print("************************************************************************************")
-        print("********************** We are Doing SIN Document *******************************")
-        print("************************************************************************************")
+        print(
+            "************************************************************************************"
+        )
+        print(
+            "********************** We are Doing SIN Document *******************************"
+        )
+        print(
+            "************************************************************************************"
+        )
 
-        print("*************************************")
-        print("*************************************")
-        sin_number = str(input("Please Enter SIN Number: "))
-        print("*************************************")
-        print("*************************************")
-        self.making_sin_pdf_file(name, employee_address, sin_number)
+        self.making_sin_pdf_file(name, employee_address, global_sin_number)
 
 
 class Proof_Of_Enrollment:
@@ -595,13 +728,13 @@ class Proof_Of_Enrollment:
             enrol_date=str(enrollment_date_i).capitalize(),
             student_name=str(student_name_i).title(),
             student_number=str(student_number_i),
-            std_career=str(career_i).upper(),
-            std_term=str(term_i).upper(),
+            std_career=str(career_i).title(),
+            std_term=str(term_i).title(),
             term_start_date=str(term_start_date_i).capitalize(),
             term_end_date=str(term_ending_date_i).capitalize(),
-            faculty=str(faculty_i).upper(),
-            plan_of_study=str(plan_of_study_i).upper(),
-            term_status=str(term_status_i).upper(),
+            faculty=str(faculty_i).title(),
+            plan_of_study=str(plan_of_study_i).title(),
+            term_status=str(term_status_i).title(),
             year_in_program=str(year_in_program_i).upper(),
             length=str(program_length_i).upper(),
         )
@@ -614,9 +747,15 @@ class Proof_Of_Enrollment:
         return
 
     def pof_wrapper(self, name):
-        print("************************************************************************************")
-        print("****************** We are Doing Proof Of Enrollment Document **********************")
-        print("************************************************************************************")
+        print(
+            "************************************************************************************"
+        )
+        print(
+            "****************** We are Doing Proof Of Enrollment Document **********************"
+        )
+        print(
+            "************************************************************************************"
+        )
 
         print("*************************************")
         print("*************************************")
@@ -752,13 +891,18 @@ class TFour:
 
     def breaking_number(self, num):
         a = str(num).split(".")
-        if a[-1] == "0":
+        if len(a[-1]) == 1:
+            before_point = a[0]
+            after_point = str(a[-1]) + "0"
+            return before_point, after_point
+        elif len(a) == 1:
             before_point = a[0]
             after_point = "00"
             return before_point, after_point
-        before_point = a[0]
-        after_point = a[-1][:2]
-        return before_point, after_point
+        else:
+            before_point = a[0]
+            after_point = a[-1][:2]
+            return before_point, after_point
 
     def percentage(self, percent, whole):
         return (percent * whole) / 100.0
@@ -831,7 +975,39 @@ class TFour:
         address_1, address_2 = self.making_address(employee_address_i)
         first_name, last_name = self.making_fist_last_name(name_i)
         sin1, sin2, sin3 = self.making_sin(sin_number_i)
-        year_number = str(t4_year_input_i)[2:]
+        # year_number = str(t4_year_input_i)[2:]
+        year_number = str(t4_year_input_i)
+
+        important_values_for_paystub = values_for_paystub(year_number)
+
+        global federal_first
+        federal_first = important_values_for_paystub["federal_first"]
+        global province_first
+        province_first = important_values_for_paystub["province_first"]
+        global federal_second
+        federal_second = important_values_for_paystub["federal_second"]
+        global province_second
+        province_second = important_values_for_paystub["province_second"]
+        global federal_three
+        federal_three = important_values_for_paystub["federal_three"]
+        global province_three
+        province_three = important_values_for_paystub["province_three"]
+        global federal_four
+        federal_four = important_values_for_paystub["federal_four"]
+        global province_four
+        province_four = important_values_for_paystub["province_four"]
+        global federal_five
+        federal_five = important_values_for_paystub["federal_five"]
+        global province_five
+        province_five = important_values_for_paystub["province_five"]
+        global EI_Rate
+        EI_Rate = important_values_for_paystub["EI_Rate"]
+        global CPP_Rate
+        CPP_Rate = important_values_for_paystub["CPP_Rate"]
+        global EI_Maximum_Deduction
+        EI_Maximum_Deduction = important_values_for_paystub["EI_Maximum_Deduction"]
+        global CPP_Maximum_Deduction
+        CPP_Maximum_Deduction = important_values_for_paystub["CPP_Maximum_Deduction"]
 
         paystub_object = PayStubs()
         income_tax, percntage = paystub_object.total_incom_tax_calculator_year_to_date(
@@ -931,18 +1107,16 @@ class TFour:
         return
 
     def T4_Wrapper(self, name, employee_address):
-        print("************************************************************************************")
-        print("************************* We are Doing T4 Document *********************************")
-        print("************************************************************************************")
+        print(
+            "************************************************************************************"
+        )
+        print(
+            "************************* We are Doing T4 Document *********************************"
+        )
+        print(
+            "************************************************************************************"
+        )
 
-        print("*************************************")
-        print("*************************************")
-        sin_number = str(input("Please Enter SIN Number: "))
-        print("*************************************")
-        print("*************************************")
-        employer_name = input("Please Enter Employer Name: ")
-        print("*************************************")
-        print("*************************************")
         number_of_documents = int(
             input("Please enter How many documents you want to create: ")
         )
@@ -963,16 +1137,15 @@ class TFour:
                 self.making_t4_pdf_file(
                     name,
                     employee_address,
-                    sin_number,
+                    global_sin_number,
                     t4_year_input,
                     i,
                     gross_salary,
-                    employer_name,
+                    global_employer_name,
                 )
 
 
 class TD_Document:
-
     global_starting_balance = 0
     global_account_number = ""
 
@@ -1102,6 +1275,51 @@ class TD_Document:
                 total = total + float(j["deposit"])
         return total
 
+    def convrt_val(self, text):
+        first_step = text.split(".")
+        if len(first_step) == 2:
+            after_point = len(first_step[-1])
+            if after_point == 1:
+                first_step[-1] = first_step[-1] + "0"
+                final_ret_val = first_step[0] + "." + first_step[-1]
+                return final_ret_val
+            elif after_point == 2:
+                return first_step[0] + "." + first_step[-1]
+        elif len(first_step) == 1:
+            send_val = "00"
+            final_ret_val = first_step[0] + "." + send_val
+            return final_ret_val
+
+    def final_update_on_td(self, trans):
+        new_trans = []
+        for i in trans:
+            try:
+                i["withdraw"] = self.convrt_val(i["withdraw"])
+            except:
+                pass
+            try:
+                i["deposit"] = self.convrt_val(i["deposit"])
+            except:
+                pass
+            new_trans.append(i)
+        return new_trans
+
+    def another_final_update_on_td(self, trans):
+        new_trans = []
+        for i in trans:
+            try:
+                if i["withdraw"] == ".00":
+                    i["withdraw"] = ""
+            except:
+                pass
+            try:
+                if i["deposit"] == ".00":
+                    i["deposit"] = ""
+            except:
+                pass
+            new_trans.append(i)
+        return new_trans
+
     def making_all_transactions(
         self,
         trans,
@@ -1174,7 +1392,7 @@ class TD_Document:
                     "Date": "",
                 }
             )
-        
+
         return all_transactions, global_balance
 
     def making_TD_pdf_file_for_thirty_trans(
@@ -1197,7 +1415,6 @@ class TD_Document:
         # "*************************************"
 
         ad_1, ad_2 = self.making_address(address_i)
-        # account_num = self.making_account_number(account_number_i)
         statement_date, month_days = self.making_statement_from(statement_from_i)
         starting_balance_dat = self.starting_blnc_date(statement_date)
         date_to_send = starting_balance_dat[:3]
@@ -1214,13 +1431,16 @@ class TD_Document:
 
         for f_trans in trans_after_final_mod:
             try:
-                f_trans['deposit'] = self.comma_seprated(float(f_trans['deposit']))
+                f_trans["deposit"] = self.comma_seprated(float(f_trans["deposit"]))
             except:
                 pass
             try:
-                f_trans['withdraw'] = self.comma_seprated(float(f_trans['withdraw']))
+                f_trans["withdraw"] = self.comma_seprated(float(f_trans["withdraw"]))
             except:
                 pass
+
+        trans_after_final_mod = self.final_update_on_td(trans_after_final_mod)
+        trans_after_final_mod = self.another_final_update_on_td(trans_after_final_mod)
 
         # "*************************************"
         document.merge(
@@ -1460,9 +1680,15 @@ class TD_Document:
         return
 
     def TD_wrapper(self, emp_name, address):
-        print("************************************************************************************")
-        print("************************** We are Doing TD Document ********************************")
-        print("************************************************************************************")
+        print(
+            "************************************************************************************"
+        )
+        print(
+            "************************** We are Doing TD Document ********************************"
+        )
+        print(
+            "************************************************************************************"
+        )
 
         number_of_months = input("How many months you want to create for : ")
         b_1 = ""
@@ -1558,61 +1784,567 @@ class TD_Document:
             )
 
 
+class PayStubChild(PayStubs):
+
+    def date_range(self, input_date):
+        # convert input string to datetime object
+        date_obj = datetime.strptime(input_date, "%b %d %Y")
+
+        # calculate start and end dates based on input date
+        last_day = datetime(date_obj.year, date_obj.month, 1) + timedelta(days=31)
+        if last_day.month != date_obj.month:
+            end_day = last_day - timedelta(days=last_day.day - 15)
+        else:
+            end_day = datetime(date_obj.year, date_obj.month, 15)
+
+        if date_obj.day > 15:
+            start_day = datetime(date_obj.year, date_obj.month, 16)
+            next_month = date_obj.replace(day=28) + timedelta(days=4)
+            if next_month.month != date_obj.month:
+                end_day = datetime(next_month.year, next_month.month, 1) - timedelta(
+                    days=1
+                )
+        else:
+            start_day = datetime(date_obj.year, date_obj.month, 1)
+            end_day = datetime(date_obj.year, date_obj.month, 15)
+            if start_day.weekday() >= 4:
+                end_day = datetime(date_obj.year, date_obj.month, 15)
+
+        # format dates as strings in desired format
+        start_str = start_day.strftime("%Y-%m-%d")
+        end_str = end_day.strftime("%Y-%m-%d")
+
+        return f"{start_str} - {end_str}"
+
+    def checque_date(self, input_str):
+        date_obj = datetime.strptime(input_str, "%b %d %Y")
+        return date_obj.strftime("%Y-%m-%d")
+
+    def format_number(self, num):
+        return "{:,.2f}".format(float(num))
+
+    def making_paystub_two_document(
+        self,
+        e_name_i,
+        e_address_i,
+        occupation_i,
+        pay_period_i,
+        cheque_date_i,
+        number_of_hours_i,
+        rate_per_hour_i,
+        gross_total_i,
+        year_to_date_for_paystub2_i,
+        year_to_date_cpp_i,
+        year_to_date_ei_i,
+        year_to_date_incom_tax_i,
+        cpp_tax_i,
+        Ei_tax_i,
+        income_tax_i,
+        current_total_i,
+        total_y_t_d_calculations_i,
+        cur_tot1_i,
+        y_t_d_net_cal1_i,
+        paystub_number_i,
+    ):
+        template = "PaystubTwo.docx"
+        document = MailMerge(template)
+
+        td_object = TD_Document()
+        ad_1, ad_2 = td_object.making_address(e_address_i)
+        processed_pay_period = self.date_range(pay_period_i)
+        final_cheque_date = self.checque_date(cheque_date_i)
+
+        document.merge(
+            employer_name=str(global_employer_name).upper(),
+            employer_ad_1=str(global_employer_address_1).upper(),
+            employer_ad_2=str(global_employer_address_2).upper(),
+            employer_name_2=str(global_employer_name).upper(),
+            employer_add_3=str(global_employer_address_1).upper(),
+            employer_add_4=str(global_employer_address_2).upper(),
+            employee_name=str(e_name_i).upper(),
+            employee_name_1=str(e_name_i).upper(),
+            employee_add_1=str(ad_1).upper(),
+            employee_add_2=str(ad_2).upper(),
+            emp_addr_3=str(e_address_i).upper(),
+            occupation=str(occupation_i).upper(),
+            pay_period=str(processed_pay_period),
+            cheque=str(final_cheque_date),
+            qty=self.format_number(str(number_of_hours_i)),
+            rate=self.format_number(str(rate_per_hour_i)),
+            curr=self.format_number(str(gross_total_i)),
+            y_t_d=self.format_number(
+                self.return_float(str(year_to_date_for_paystub2_i))
+            ),
+            ytd_cpp=self.format_number(str(year_to_date_cpp_i)),
+            ytd_ei=self.format_number(str(year_to_date_ei_i)),
+            ytd_in=self.format_number(str(year_to_date_incom_tax_i)),
+            cpp=self.format_number(str(cpp_tax_i)),
+            ei=self.format_number(str(Ei_tax_i)),
+            inc=self.format_number(str(income_tax_i)),
+            cur_net=self.format_number(current_total_i),
+            y_td_net=self.format_number(total_y_t_d_calculations_i),
+            cur_total=self.format_number(str(cur_tot1_i)),
+            y_td_tot=self.format_number(str(y_t_d_net_cal1_i)),
+        )
+
+        document.write("Output_File.docx")
+        self.convert_to_pdf(f"PayStubTwo-{paystub_number_i}")
+        try:
+            os.remove(os.path.abspath("Output_File.docx"))
+        except:
+            print("Error in Removing File.")
+        return
+
+    def paystub_child_wrapper(self, e_name, e_address):
+        print(
+            "************************************************************************************"
+        )
+        print(
+            "************************** We are Doing PayStub 2 ********************************"
+        )
+        print(
+            "************************************************************************************"
+        )
+
+        rate_per_hour = int(input("Please Enter Rate per Hour : "))
+        print("*" * 100)
+        print("*" * 100)
+
+        occupation = input("Please Enter Occupation : ")
+        print("*" * 100)
+        print("*" * 100)
+
+        number_of_pay_stubs = input(
+            "Please enter, how many number of paystubs you want to create: "
+        )
+        if int(number_of_pay_stubs) == 0:
+            print("You have enterd 0. So i am not creating any paystub. Thanks")
+            sys.exit()
+        elif int(number_of_pay_stubs) > 0:
+            for paystub_number in range(int(number_of_pay_stubs)):
+                
+                pay_period = input("Please enter date for Pay Period (Mar 01 2023) : ")
+                print("*" * 100)
+                print("*" * 100)
+                cheque_date = input("Please Enter Cheque date (Feb 11 2023): ")
+                print("*" * 100)
+                print("*" * 100)
+                number_of_hours = int(input("Please Enter Number of Hours : "))
+                print("*" * 100)
+                print("*" * 100)
+                
+                new_year_to_send = pay_period.split(" ")[-1]
+                important_values_for_paystub = values_for_paystub(new_year_to_send)
+
+                global federal_first
+                federal_first = important_values_for_paystub["federal_first"]
+                global province_first
+                province_first = important_values_for_paystub["province_first"]
+                global federal_second
+                federal_second = important_values_for_paystub["federal_second"]
+                global province_second
+                province_second = important_values_for_paystub["province_second"]
+                global federal_three
+                federal_three = important_values_for_paystub["federal_three"]
+                global province_three
+                province_three = important_values_for_paystub["province_three"]
+                global federal_four
+                federal_four = important_values_for_paystub["federal_four"]
+                global province_four
+                province_four = important_values_for_paystub["province_four"]
+                global federal_five
+                federal_five = important_values_for_paystub["federal_five"]
+                global province_five
+                province_five = important_values_for_paystub["province_five"]
+                global EI_Rate
+                EI_Rate = important_values_for_paystub["EI_Rate"]
+                global CPP_Rate
+                CPP_Rate = important_values_for_paystub["CPP_Rate"]
+                global EI_Maximum_Deduction
+                EI_Maximum_Deduction = important_values_for_paystub[
+                    "EI_Maximum_Deduction"
+                ]
+                global CPP_Maximum_Deduction
+                CPP_Maximum_Deduction = important_values_for_paystub[
+                    "CPP_Maximum_Deduction"
+                ]
+
+                gross_total = number_of_hours * rate_per_hour
+                
+                if paystub_number == 0:
+                    year_to_date_for_paystub2 = self.calculate_year_to_date(
+                        number_of_hours, rate_per_hour, pay_period
+                    )
+                    last_year_to_date = year_to_date_for_paystub2
+                elif paystub_number > 0:
+                    year_to_date_for_paystub2 = self.return_float(last_year_to_date) + gross_total
+                    year_to_date_for_paystub2 = self.comma_seprated(year_to_date_for_paystub2)
+                    last_year_to_date = year_to_date_for_paystub2
+
+                y_t_date_input = self.return_float(year_to_date_for_paystub2)
+
+                (
+                    year_to_date_incom_tax,
+                    total_percentage_for_monthly,
+                ) = self.total_incom_tax_calculator_year_to_date(y_t_date_input)
+                year_to_date_ei = self.EI_calculator_year_to_date(y_t_date_input)
+                year_to_date_cpp = self.CPP_Calculator_year_to_date(y_t_date_input)
+
+                income_tax = self.total_incom_tax_calculator_period(
+                    gross_total, total_percentage_for_monthly
+                )
+                Ei_tax = self.EI_calculator_Period(gross_total, year_to_date_ei)
+                cpp_tax = self.CPP_Calculator_Period(gross_total, year_to_date_cpp)
+
+                # This is the total of current calculations
+                cur_tot1 = float(income_tax) + float(Ei_tax) + float(cpp_tax)
+                current_total = float(gross_total) - cur_tot1
+
+                # This is year to date net calculations
+                y_t_d_net_cal1 = (
+                    float(year_to_date_incom_tax)
+                    + float(year_to_date_cpp)
+                    + float(year_to_date_ei)
+                )
+                total_y_t_d_calculations = (
+                    float(self.return_float(year_to_date_for_paystub2)) - y_t_d_net_cal1
+                )
+
+                self.making_paystub_two_document(
+                    e_name,
+                    e_address,
+                    occupation,
+                    pay_period,
+                    cheque_date,
+                    number_of_hours,
+                    rate_per_hour,
+                    gross_total,
+                    year_to_date_for_paystub2,
+                    year_to_date_cpp,
+                    year_to_date_ei,
+                    year_to_date_incom_tax,
+                    cpp_tax,
+                    Ei_tax,
+                    income_tax,
+                    current_total,
+                    total_y_t_d_calculations,
+                    cur_tot1,
+                    y_t_d_net_cal1,
+                    paystub_number,
+                )
+
+
+class PayStubChildONE(PayStubs):
+    def date_range(self, input_date):
+        # convert input string to datetime object
+        date_obj = datetime.strptime(input_date, "%b %d %Y")
+
+        # calculate start and end dates based on input date
+        last_day = datetime(date_obj.year, date_obj.month, 1) + timedelta(days=31)
+        if last_day.month != date_obj.month:
+            end_day = last_day - timedelta(days=last_day.day - 15)
+        else:
+            end_day = datetime(date_obj.year, date_obj.month, 15)
+
+        if date_obj.day > 15:
+            start_day = datetime(date_obj.year, date_obj.month, 16)
+            next_month = date_obj.replace(day=28) + timedelta(days=4)
+            if next_month.month != date_obj.month:
+                end_day = datetime(next_month.year, next_month.month, 1) - timedelta(
+                    days=1
+                )
+        else:
+            start_day = datetime(date_obj.year, date_obj.month, 1)
+            end_day = datetime(date_obj.year, date_obj.month, 15)
+            if start_day.weekday() >= 4:
+                end_day = datetime(date_obj.year, date_obj.month, 14)
+
+        # format dates as strings in desired format
+        start_str = start_day.strftime("%Y-%m-%d")
+        end_str = end_day.strftime("%Y-%m-%d")
+
+        def manipulate_date(date):
+            date_obj = datetime.strptime(date, "%Y-%m-%d")
+            formatted_date = date_obj.strftime("%B %d, %Y")
+            return formatted_date
+
+        start_str = manipulate_date(start_str)
+        end_str = manipulate_date(end_str)
+
+        return start_str, end_str
+
+    def checque_date(self, input_str):
+        date_obj = datetime.strptime(input_str, "%b %d %Y")
+        date_obj = date_obj.strftime("%Y-%m-%d")
+        def manipulate_date(date):
+            date_obj = datetime.strptime(date, "%Y-%m-%d")
+            formatted_date = date_obj.strftime("%B %d, %Y")
+            return formatted_date
+        cheque_date = manipulate_date(date_obj)
+        return cheque_date
+
+    def format_number(self, num):
+        return "{:,.2f}".format(float(num))
+
+    def split_name(self, name):
+        e_name = name.split(" ")
+        first_name = e_name[0]
+        last_name = " ".join(e_name[1:])
+        return first_name, last_name
+
+    def making_paystub_two_document(
+        self,
+        e_name_i,
+        e_address_i,
+        # occupation_i,
+        pay_period_i,
+        cheque_date_i,
+        number_of_hours_i,
+        rate_per_hour_i,
+        gross_total_i,
+        year_to_date_for_paystub2_i,
+        year_to_date_cpp_i,
+        year_to_date_ei_i,
+        year_to_date_incom_tax_i,
+        cpp_tax_i,
+        Ei_tax_i,
+        income_tax_i,
+        current_total_i,
+        total_y_t_d_calculations_i,
+        cur_tot1_i,
+        y_t_d_net_cal1_i,
+        paystub_number_i,
+    ):
+        template = "PayStubThree.docx"
+        document = MailMerge(template)
+
+        td_object = TD_Document()
+        ad_1, ad_2 = td_object.making_address(e_address_i)
+        processed_pay_period_1, processed_pay_period_2 = self.date_range(pay_period_i)
+        final_cheque_date = self.checque_date(cheque_date_i)
+        first_name, last_name = self.split_name(e_name_i)
+
+        
+        ytd_hours_cal = float(self.return_float(year_to_date_for_paystub2_i)) / float(rate_per_hour_i)
+
+        document.merge(
+            employer_name=str(global_employer_name).upper(),
+            employer_ad_1=str(global_employer_address_1).upper(),
+            empad2=str(global_employer_address_2).upper(),
+            employer_name_2=str(global_employer_name).upper(),
+            # employer_add_3=str(global_employer_address_1).upper(),
+            # employer_add_4=str(global_employer_address_2).upper(),
+            f_name=str(first_name).upper(),
+            l_name=str(last_name).upper(),
+            # employee_name_1=str(e_name_i).upper(),
+            employee_add_1=str(ad_1).upper(),
+            employee_add_2=str(ad_2).upper(),
+            # emp_addr_3=str(e_address_i).upper(),
+            # occupation=str(occupation_i).upper(),
+            pay_period_1=str(processed_pay_period_1),
+            pay_period_2=str(processed_pay_period_2),
+            cheque=str(final_cheque_date),
+            qty=self.format_number(str(number_of_hours_i)),
+            rate=self.format_number(str(rate_per_hour_i)),
+            curr=self.format_number(str(gross_total_i)),
+            curr1=self.format_number(str(gross_total_i)),
+            y_t_d=self.format_number(
+                self.return_float(str(year_to_date_for_paystub2_i))
+            ),
+            y_t_d_1=self.format_number(
+                self.return_float(str(year_to_date_for_paystub2_i))
+            ),
+            ytd_cpp=self.format_number(str(year_to_date_cpp_i)),
+            ytd_ei=self.format_number(str(year_to_date_ei_i)),
+            ytd_in=self.format_number(str(year_to_date_incom_tax_i)),
+            cpp=self.format_number(str(cpp_tax_i)),
+            ei=self.format_number(str(Ei_tax_i)),
+            inc=self.format_number(str(income_tax_i)),
+            cur_net=self.format_number(current_total_i),
+            cur_net1=self.format_number(current_total_i),
+            cur_net2=self.format_number(current_total_i),
+            # y_td_net = self.format_number(total_y_t_d_calculations_i),
+            cur_total=self.format_number(str(cur_tot1_i)),
+            y_td_tot=self.format_number(str(y_t_d_net_cal1_i)),
+            ytd_hours = self.format_number(str(ytd_hours_cal)),
+        )
+
+        document.write("Output_File.docx")
+        self.convert_to_pdf(f"PayStubThree-{paystub_number_i}")
+        try:
+            os.remove(os.path.abspath("Output_File.docx"))
+        except:
+            print("Error in Removing File.")
+        return
+
+    def paystub_child_wrapper(self, e_name, e_address):
+        print(
+            "************************************************************************************"
+        )
+        print(
+            "************************** We are Doing PayStub 3 ********************************"
+        )
+        print(
+            "************************************************************************************"
+        )
+
+        rate_per_hour = int(input("Please Enter Rate per Hour : "))
+        print("*" * 100)
+        print("*" * 100)
+
+        number_of_pay_stubs = input(
+            "Please enter, how many number of paystubs you want to create: "
+        )
+        if int(number_of_pay_stubs) == 0:
+            print("You have enterd 0. So i am not creating any paystub. Thanks")
+            sys.exit()
+        elif int(number_of_pay_stubs) > 0:
+            for paystub_number in range(int(number_of_pay_stubs)):
+                # occupation = input("Please Enter Occupation : ")
+                # print("*" * 100)
+                # print("*" * 100)
+                pay_period = input("Please enter date for Pay Period (Mar 01 2023) : ")
+                print("*" * 100)
+                print("*" * 100)
+                cheque_date = input("Please Enter Cheque date (Feb 11 2023): ")
+                print("*" * 100)
+                print("*" * 100)
+                number_of_hours = int(input("Please Enter Number of Hours : "))
+                print("*" * 100)
+                print("*" * 100)
+    
+                new_year_to_send = pay_period.split(" ")[-1]
+                important_values_for_paystub = values_for_paystub(new_year_to_send)
+
+                global federal_first
+                federal_first = important_values_for_paystub["federal_first"]
+                global province_first
+                province_first = important_values_for_paystub["province_first"]
+                global federal_second
+                federal_second = important_values_for_paystub["federal_second"]
+                global province_second
+                province_second = important_values_for_paystub["province_second"]
+                global federal_three
+                federal_three = important_values_for_paystub["federal_three"]
+                global province_three
+                province_three = important_values_for_paystub["province_three"]
+                global federal_four
+                federal_four = important_values_for_paystub["federal_four"]
+                global province_four
+                province_four = important_values_for_paystub["province_four"]
+                global federal_five
+                federal_five = important_values_for_paystub["federal_five"]
+                global province_five
+                province_five = important_values_for_paystub["province_five"]
+                global EI_Rate
+                EI_Rate = important_values_for_paystub["EI_Rate"]
+                global CPP_Rate
+                CPP_Rate = important_values_for_paystub["CPP_Rate"]
+                global EI_Maximum_Deduction
+                EI_Maximum_Deduction = important_values_for_paystub[
+                    "EI_Maximum_Deduction"
+                ]
+                global CPP_Maximum_Deduction
+                CPP_Maximum_Deduction = important_values_for_paystub[
+                    "CPP_Maximum_Deduction"
+                ]
+
+                gross_total = number_of_hours * rate_per_hour
+
+                if paystub_number == 0:
+                    year_to_date_for_paystub2 = self.calculate_year_to_date(
+                        number_of_hours, rate_per_hour, pay_period
+                    )
+                    last_year_to_date = year_to_date_for_paystub2
+                elif paystub_number > 0:
+                    year_to_date_for_paystub2 = self.return_float(last_year_to_date) + gross_total
+                    year_to_date_for_paystub2 = self.comma_seprated(year_to_date_for_paystub2)
+                    last_year_to_date = year_to_date_for_paystub2
+
+                y_t_date_input = self.return_float(year_to_date_for_paystub2)
+
+                (
+                    year_to_date_incom_tax,
+                    total_percentage_for_monthly,
+                ) = self.total_incom_tax_calculator_year_to_date(y_t_date_input)
+                year_to_date_ei = self.EI_calculator_year_to_date(y_t_date_input)
+                year_to_date_cpp = self.CPP_Calculator_year_to_date(y_t_date_input)
+
+                income_tax = self.total_incom_tax_calculator_period(
+                    gross_total, total_percentage_for_monthly
+                )
+                Ei_tax = self.EI_calculator_Period(gross_total, year_to_date_ei)
+                cpp_tax = self.CPP_Calculator_Period(gross_total, year_to_date_cpp)
+
+                # This is the total of current calculations
+                cur_tot1 = float(income_tax) + float(Ei_tax) + float(cpp_tax)
+                current_total = float(gross_total) - cur_tot1
+
+                # This is year to date net calculations
+                y_t_d_net_cal1 = (
+                    float(year_to_date_incom_tax)
+                    + float(year_to_date_cpp)
+                    + float(year_to_date_ei)
+                )
+                total_y_t_d_calculations = (
+                    float(self.return_float(year_to_date_for_paystub2)) - y_t_d_net_cal1
+                )
+
+                self.making_paystub_two_document(
+                    e_name,
+                    e_address,
+                    # occupation,
+                    pay_period,
+                    cheque_date,
+                    number_of_hours,
+                    rate_per_hour,
+                    gross_total,
+                    year_to_date_for_paystub2,
+                    year_to_date_cpp,
+                    year_to_date_ei,
+                    year_to_date_incom_tax,
+                    cpp_tax,
+                    Ei_tax,
+                    income_tax,
+                    current_total,
+                    total_y_t_d_calculations,
+                    cur_tot1,
+                    y_t_d_net_cal1,
+                    paystub_number,
+                )
+
+
 #######################################################################################################################################
 #######################################################################################################################################
 #######################################################################################################################################
 #######################################################################################################################################
 
 if __name__ == "__main__":
-
     print("***************************")
     print("***************************")
-    name = input("Please enter Employee name: ").upper()
+    global_name = input("Please enter Employee name: ").upper()
     print("***************************")
     print("***************************")
-    employee_address = input("Please enter Employee address: ").upper()
-
+    global_employee_address = input("Please enter Employee address: ").upper()
     print("***************************")
     print("***************************")
-    document_type = input(
-        """ Please Enter Which Document You want to Create, Select Options 
-                         1 ) PayStub 
-                         2 ) Proof Of SIN 
-                         3 ) T4 Document
-                         4 ) Proof Of Enrollment
-                         5 ) TD Document
-                         6 ) All
-                        """
+    global_employer_name = input("Please Enter Employer Name : ").upper()
+    print("***************************")
+    print("***************************")
+    employer_address = input("Please Enter Employer Address: ").upper()
+    global_employer_address_1, global_employer_address_2 = making_address(
+        employer_address
     )
     print("***************************")
     print("***************************")
+    global_sin_number = input("Please Enter SIN number : ").upper()
 
-    if int(document_type) == 1:
-        pay_sub_object = PayStubs()
-        pay_sub_object.paystub_wrapper(name, employee_address)
-    elif int(document_type) == 2:
-        sin_object = Proof_Of_SIN()
-        sin_object.SIN_Wrapper(name, employee_address)
-    elif int(document_type) == 3:
-        TFour_object = TFour()
-        TFour_object.T4_Wrapper(name, employee_address)
-    elif int(document_type) == 4:
-        poof_of_enrl = Proof_Of_Enrollment()
-        poof_of_enrl.pof_wrapper(
-            name,
-        )
-    elif int(document_type) == 5:
-        td_clas = TD_Document()
-        td_clas.TD_wrapper(name, employee_address)
-    elif int(document_type) == 6:
-        pay_sub_object = PayStubs()
-        sin_object = Proof_Of_SIN()
-        TFour_object = TFour()
-        poof_of_enrl = Proof_Of_Enrollment()
-        td_clas = TD_Document()
+    options_feature(global_name, global_employee_address)
 
-        pay_sub_object.paystub_wrapper(name, employee_address)
-        sin_object.SIN_Wrapper(name, employee_address)
-        TFour_object.T4_Wrapper(name, employee_address)
-        poof_of_enrl.pof_wrapper(name,)
-        td_clas.TD_wrapper(name, employee_address)
+
+# 1680 Richmond St
+# LONDON, ON N6G 3Y9
+
+
+# 57-1478 ADELAIDE ST N
+# LONDON, ON N5X 3Y1
