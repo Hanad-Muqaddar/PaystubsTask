@@ -1,4 +1,3 @@
-# from __future__ import print_function
 from mailmerge import MailMerge
 import dateparser
 import os
@@ -64,6 +63,12 @@ def making_address(address):
     return address_1_f, address_2_f
 
 
+def making_folder(folder_name):
+    folder_path = f'C:\\Users\\HP\\Desktop\\PAYSTUB\\Results\\{folder_name}'
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+    return
+
 # New Feature
 ###########################################################################################################################################
 ###########################################################################################################################################
@@ -71,7 +76,7 @@ def making_address(address):
 ###########################################################################################################################################
 
 
-def options_feature(name, employee_address):
+def options_feature(name, employee_address, row_i):
     selected_option = input(
         """Do you want to create Selected documents (1,2,3), Exit : Select Options,
                     1 ) Selected
@@ -79,17 +84,22 @@ def options_feature(name, employee_address):
                         """
     )
     if int(selected_option) == 1:
-        document_type = input(
-            """ Please Enter Which Document You want to Create, Select Options like this : (1,2,3)
-                            1 ) PayStub 
-                            2 ) Proof Of SIN 
-                            3 ) T4 Document
-                            4 ) Proof Of Enrollment
-                            5 ) TD Document
-                            6 ) ALL
-                            """
-        )
-        int_numbers = list(map(int, document_type.split(",")))
+        
+        if pd.isna(row_i['doc_options']):
+            document_type = input(
+                """ Please Enter Which Document You want to Create, Select Options like this : (1,2,3)
+                                1 ) PayStub 
+                                2 ) Proof Of SIN 
+                                3 ) T4 Document
+                                4 ) Proof Of Enrollment
+                                5 ) TD Document
+                                6 ) ALL
+                                """
+            )
+            int_numbers = list(map(int, document_type.split(",")))
+        else:
+            int_split = row_i['doc_options'].split(",")
+            int_numbers = list(map(int, int_split))
         for number in int_numbers:
             if number == 1:
                 slection_number = input(
@@ -120,7 +130,7 @@ def options_feature(name, employee_address):
             elif number == 5:
                 td_clas = TD_Document()
                 td_clas.TD_wrapper(name, employee_address)
-            elif int(document_type) == 6:
+            elif number == 6:
                 pay_sub_object = PayStubs()
                 sin_object = Proof_Of_SIN()
                 TFour_object = TFour()
@@ -181,7 +191,8 @@ class PayStubs:
     def convert_to_pdf(self, filename):
         new_filename = filename + ".pdf"
         in_file = os.path.abspath("Output_File.docx")
-        out_file = os.path.abspath("Results/" + new_filename)
+        making_folder(global_name)
+        out_file = os.path.abspath(f"Results/{global_name}/" + new_filename)
         convert(in_file, out_file)
 
     def federal_income_tax_calculator(self, gross_pay):
@@ -510,7 +521,6 @@ class PayStubs:
         print(
             "************************************************************************************"
         )
-
         rate = float(input("Please enter the rate which you decided: "))
         print("***************************")
         print("***************************")
@@ -646,7 +656,8 @@ class Proof_Of_SIN:
     def convert_to_pdf(self, filename):
         new_filename = filename + ".pdf"
         in_file = os.path.abspath("Output_File_SIN.docx")
-        out_file = os.path.abspath("Results/" + new_filename)
+        making_folder(global_name)
+        out_file = os.path.abspath(f"Results/{global_name}/" + new_filename)
         convert(in_file, out_file)
 
     def making_fist_last_name(self, name):
@@ -658,9 +669,9 @@ class Proof_Of_SIN:
         return first_name, last_name
 
     def making_sin(self, sin_number):
-        sin_1 = sin_number[:3]
-        sin_2 = sin_number[3:6]
-        sin_3 = sin_number[6:]
+        sin_1 = str(int(sin_number[:3]))
+        sin_2 = str(int(sin_number[3:6]))
+        sin_3 = str(int(sin_number[6:]))
         return sin_1, sin_2, sin_3
 
     def making_sin_pdf_file(self, name_i, employee_address_i, sin_number_i):
@@ -705,7 +716,8 @@ class Proof_Of_Enrollment:
     def convert_to_pdf(self, filename):
         new_filename = filename + ".pdf"
         in_file = os.path.abspath("Output_File_POE.docx")
-        out_file = os.path.abspath("Results/" + new_filename)
+        making_folder(global_name)
+        out_file = os.path.abspath(f"Results/{global_name}/" + new_filename)
         convert(in_file, out_file)
 
     def making_POE_pdf_file(
@@ -764,7 +776,13 @@ class Proof_Of_Enrollment:
             input("Please Enter Enrollment Date Like (June 12, 2021): ")
         )
         student_name = name
-        student_number = "2512" + str(random.randint(10000, 99999))
+
+        student_number_default = "2512" + str(random.randint(10000, 99999))
+        student_option_input = str(input("Student Number Default : Yes or NO : "))
+        if student_option_input.lower() == "yes":
+            student_number = student_number_default
+        else:
+            student_number = "2512" + str(input("Please Enter Student Number : "))
         print("*************************************")
         print("*************************************")
         career_default_value = "Undergraduate"
@@ -870,13 +888,14 @@ class TFour:
     def convert_to_pdf(self, filename):
         new_filename = filename + ".pdf"
         in_file = os.path.abspath("Output_File_T4.docx")
-        out_file = os.path.abspath("Results/" + new_filename)
+        making_folder(global_name)
+        out_file = os.path.abspath(f"Results/{global_name}/" + new_filename)
         convert(in_file, out_file)
 
     def making_sin(self, sin_number):
-        sin_1 = sin_number[:3]
-        sin_2 = sin_number[3:6]
-        sin_3 = sin_number[6:]
+        sin_1 = str(int(sin_number[:3]))
+        sin_2 = str(int(sin_number[3:6]))
+        sin_3 = str(int(sin_number[6:]))
         return sin_1, sin_2, sin_3
 
     def making_fist_last_name(self, name):
@@ -1178,7 +1197,8 @@ class TD_Document:
     def convert_to_pdf(self, filename):
         new_filename = filename + ".pdf"
         in_file = os.path.abspath("Output_File_TD.docx")
-        out_file = os.path.abspath("Results/" + new_filename)
+        making_folder(global_name)
+        out_file = os.path.abspath(f"Results/{global_name}/" + new_filename)
         convert(in_file, out_file)
 
     def making_account_number(self, number):
@@ -2337,33 +2357,37 @@ if __name__ == "__main__":
         global_name = row["Employee_Name"]
         if pd.isna(row["Employee_Name"]):
             global_name = input("Please enter Employee name: ").upper()
+        print(f"We are doing document of {global_name}")
         print("***************************")
         print("***************************")
         global_employee_address = row["Employee_Address"]
         if pd.isna(row["Employee_Address"]):
             global_employee_address = input("Please enter Employee address: ").upper()
-        print("***************************")
-        print("***************************")
+        # print("***************************")
+        # print("***************************")
         global_employer_name = row["Employer_Name"]
         if pd.isna(row["Employer_Name"]):
             global_employer_name = input("Please Enter Employer Name : ").upper()
-        print("***************************")
-        print("***************************")
+        # print("***************************")
+        # print("***************************")
         employer_address = row["Employer_Address"]
         global_employer_address_1, global_employer_address_2 = making_address(
             employer_address
         )
         if pd.isna(row["Employer_Address"]):
             employer_address = input("Please Enter Employer Address: ").upper()
-            global_employer_address_1, global_employer_address_2 = making_address(
+            global_employer_address_1, global_1employer_address_2 = making_address(
                 employer_address
             )
-        print("***************************")
-        print("***************************")
+        # print("***************************")
+        # print("***************************")
         global_sin_number = str(row["SIN_Number"])
         if pd.isna(row["SIN_Number"]):
             global_sin_number = str(input("Please Enter SIN number : "))
-        options_feature(global_name, global_employee_address)
+
+        # print(row['doc_options'])
+        # print(type(row['doc_options']))
+        options_feature(global_name, global_employee_address, row)
 
 
 # 1680 Richmond St

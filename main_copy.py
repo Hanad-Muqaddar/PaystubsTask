@@ -11,6 +11,7 @@ from Constants import withdrawls
 from Constants import deposits
 from Constants import values_for_paystub
 from datetime import datetime, timedelta
+import pandas as pd
 
 # Variables For Paystub
 ###########################################################################################################################################
@@ -72,7 +73,7 @@ def making_address(address):
 
 def options_feature(name, employee_address):
     selected_option = input(
-        """Do you want to create Selected documents (1,2,3), Exit or Regular : Select Options,
+        """Do you want to create Selected documents (1,2,3), Exit : Select Options,
                     1 ) Selected
                     2 ) Exit    
                         """
@@ -657,9 +658,9 @@ class Proof_Of_SIN:
         return first_name, last_name
 
     def making_sin(self, sin_number):
-        sin_1 = sin_number[:3]
-        sin_2 = sin_number[3:6]
-        sin_3 = sin_number[6:]
+        sin_1 = str(int(sin_number[:3]))
+        sin_2 = str(int(sin_number[3:6]))
+        sin_3 = str(int(sin_number[6:]))
         return sin_1, sin_2, sin_3
 
     def making_sin_pdf_file(self, name_i, employee_address_i, sin_number_i):
@@ -763,7 +764,13 @@ class Proof_Of_Enrollment:
             input("Please Enter Enrollment Date Like (June 12, 2021): ")
         )
         student_name = name
-        student_number = "2512" + str(random.randint(10000, 99999))
+
+        student_number_default = "2512" + str(random.randint(10000, 99999))
+        student_option_input = str(input("Student Number Default : Yes or NO : "))
+        if student_option_input.lower() == "yes":
+            student_number = student_number_default
+        else:
+            student_number = "2512" + str(input("Please Enter Student Number : "))
         print("*************************************")
         print("*************************************")
         career_default_value = "Undergraduate"
@@ -873,9 +880,9 @@ class TFour:
         convert(in_file, out_file)
 
     def making_sin(self, sin_number):
-        sin_1 = sin_number[:3]
-        sin_2 = sin_number[3:6]
-        sin_3 = sin_number[6:]
+        sin_1 = str(int(sin_number[:3]))
+        sin_2 = str(int(sin_number[3:6]))
+        sin_3 = str(int(sin_number[6:]))
         return sin_1, sin_2, sin_3
 
     def making_fist_last_name(self, name):
@@ -1785,7 +1792,6 @@ class TD_Document:
 
 
 class PayStubChild(PayStubs):
-
     def date_range(self, input_date):
         # convert input string to datetime object
         date_obj = datetime.strptime(input_date, "%b %d %Y")
@@ -1922,7 +1928,6 @@ class PayStubChild(PayStubs):
             sys.exit()
         elif int(number_of_pay_stubs) > 0:
             for paystub_number in range(int(number_of_pay_stubs)):
-                
                 pay_period = input("Please enter date for Pay Period (Mar 01 2023) : ")
                 print("*" * 100)
                 print("*" * 100)
@@ -1932,7 +1937,7 @@ class PayStubChild(PayStubs):
                 number_of_hours = int(input("Please Enter Number of Hours : "))
                 print("*" * 100)
                 print("*" * 100)
-                
+
                 new_year_to_send = pay_period.split(" ")[-1]
                 important_values_for_paystub = values_for_paystub(new_year_to_send)
 
@@ -1970,15 +1975,19 @@ class PayStubChild(PayStubs):
                 ]
 
                 gross_total = number_of_hours * rate_per_hour
-                
+
                 if paystub_number == 0:
                     year_to_date_for_paystub2 = self.calculate_year_to_date(
                         number_of_hours, rate_per_hour, pay_period
                     )
                     last_year_to_date = year_to_date_for_paystub2
                 elif paystub_number > 0:
-                    year_to_date_for_paystub2 = self.return_float(last_year_to_date) + gross_total
-                    year_to_date_for_paystub2 = self.comma_seprated(year_to_date_for_paystub2)
+                    year_to_date_for_paystub2 = (
+                        self.return_float(last_year_to_date) + gross_total
+                    )
+                    year_to_date_for_paystub2 = self.comma_seprated(
+                        year_to_date_for_paystub2
+                    )
                     last_year_to_date = year_to_date_for_paystub2
 
                 y_t_date_input = self.return_float(year_to_date_for_paystub2)
@@ -2057,7 +2066,7 @@ class PayStubChildONE(PayStubs):
             start_day = datetime(date_obj.year, date_obj.month, 1)
             end_day = datetime(date_obj.year, date_obj.month, 15)
             if start_day.weekday() >= 4:
-                end_day = datetime(date_obj.year, date_obj.month, 14)
+                end_day = datetime(date_obj.year, date_obj.month, 15)
 
         # format dates as strings in desired format
         start_str = start_day.strftime("%Y-%m-%d")
@@ -2076,10 +2085,12 @@ class PayStubChildONE(PayStubs):
     def checque_date(self, input_str):
         date_obj = datetime.strptime(input_str, "%b %d %Y")
         date_obj = date_obj.strftime("%Y-%m-%d")
+
         def manipulate_date(date):
             date_obj = datetime.strptime(date, "%Y-%m-%d")
             formatted_date = date_obj.strftime("%B %d, %Y")
             return formatted_date
+
         cheque_date = manipulate_date(date_obj)
         return cheque_date
 
@@ -2124,8 +2135,9 @@ class PayStubChildONE(PayStubs):
         final_cheque_date = self.checque_date(cheque_date_i)
         first_name, last_name = self.split_name(e_name_i)
 
-        
-        ytd_hours_cal = float(self.return_float(year_to_date_for_paystub2_i)) / float(rate_per_hour_i)
+        ytd_hours_cal = float(self.return_float(year_to_date_for_paystub2_i)) / float(
+            rate_per_hour_i
+        )
 
         document.merge(
             employer_name=str(global_employer_name).upper(),
@@ -2166,7 +2178,7 @@ class PayStubChildONE(PayStubs):
             # y_td_net = self.format_number(total_y_t_d_calculations_i),
             cur_total=self.format_number(str(cur_tot1_i)),
             y_td_tot=self.format_number(str(y_t_d_net_cal1_i)),
-            ytd_hours = self.format_number(str(ytd_hours_cal)),
+            ytd_hours=self.format_number(str(ytd_hours_cal)),
         )
 
         document.write("Output_File.docx")
@@ -2212,7 +2224,7 @@ class PayStubChildONE(PayStubs):
                 number_of_hours = int(input("Please Enter Number of Hours : "))
                 print("*" * 100)
                 print("*" * 100)
-    
+
                 new_year_to_send = pay_period.split(" ")[-1]
                 important_values_for_paystub = values_for_paystub(new_year_to_send)
 
@@ -2257,8 +2269,12 @@ class PayStubChildONE(PayStubs):
                     )
                     last_year_to_date = year_to_date_for_paystub2
                 elif paystub_number > 0:
-                    year_to_date_for_paystub2 = self.return_float(last_year_to_date) + gross_total
-                    year_to_date_for_paystub2 = self.comma_seprated(year_to_date_for_paystub2)
+                    year_to_date_for_paystub2 = (
+                        self.return_float(last_year_to_date) + gross_total
+                    )
+                    year_to_date_for_paystub2 = self.comma_seprated(
+                        year_to_date_for_paystub2
+                    )
                     last_year_to_date = year_to_date_for_paystub2
 
                 y_t_date_input = self.return_float(year_to_date_for_paystub2)
@@ -2320,26 +2336,41 @@ class PayStubChildONE(PayStubs):
 #######################################################################################################################################
 
 if __name__ == "__main__":
-    print("***************************")
-    print("***************************")
-    global_name = input("Please enter Employee name: ").upper()
-    print("***************************")
-    print("***************************")
-    global_employee_address = input("Please enter Employee address: ").upper()
-    print("***************************")
-    print("***************************")
-    global_employer_name = input("Please Enter Employer Name : ").upper()
-    print("***************************")
-    print("***************************")
-    employer_address = input("Please Enter Employer Address: ").upper()
-    global_employer_address_1, global_employer_address_2 = making_address(
-        employer_address
-    )
-    print("***************************")
-    print("***************************")
-    global_sin_number = input("Please Enter SIN number : ").upper()
-
-    options_feature(global_name, global_employee_address)
+    df = pd.read_excel("Global_Variables.xlsx")
+    for index, row in df.iterrows():
+        print("***************************")
+        print("***************************")
+        global_name = row["Employee_Name"]
+        if pd.isna(row["Employee_Name"]):
+            global_name = input("Please enter Employee name: ").upper()
+        print(f"We are doing document of {global_name}")
+        print("***************************")
+        print("***************************")
+        global_employee_address = row["Employee_Address"]
+        if pd.isna(row["Employee_Address"]):
+            global_employee_address = input("Please enter Employee address: ").upper()
+        # print("***************************")
+        # print("***************************")
+        global_employer_name = row["Employer_Name"]
+        if pd.isna(row["Employer_Name"]):
+            global_employer_name = input("Please Enter Employer Name : ").upper()
+        # print("***************************")
+        # print("***************************")
+        employer_address = row["Employer_Address"]
+        global_employer_address_1, global_employer_address_2 = making_address(
+            employer_address
+        )
+        if pd.isna(row["Employer_Address"]):
+            employer_address = input("Please Enter Employer Address: ").upper()
+            global_employer_address_1, global_1employer_address_2 = making_address(
+                employer_address
+            )
+        # print("***************************")
+        # print("***************************")
+        global_sin_number = str(row["SIN_Number"])
+        if pd.isna(row["SIN_Number"]):
+            global_sin_number = str(input("Please Enter SIN number : "))
+        options_feature(global_name, global_employee_address)
 
 
 # 1680 Richmond St
