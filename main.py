@@ -11,6 +11,7 @@ from Constants import deposits
 from Constants import values_for_paystub
 from datetime import datetime, timedelta
 import pandas as pd
+import json
 
 # Variables For Paystub
 ###########################################################################################################################################
@@ -64,10 +65,12 @@ def making_address(address):
 
 
 def making_folder(folder_name):
-    folder_path = f'C:\\Users\\HP\\Desktop\\PAYSTUB\\Results\\{folder_name}'
+    current_directory = os.getcwd()
+    folder_path = f"{current_directory}\\Results\\{folder_name}"
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
     return
+
 
 # New Feature
 ###########################################################################################################################################
@@ -84,8 +87,7 @@ def options_feature(name, employee_address, row_i):
                         """
     )
     if int(selected_option) == 1:
-        
-        if pd.isna(row_i['doc_options']):
+        if pd.isna(row_i["doc_options"]):
             document_type = input(
                 """ Please Enter Which Document You want to Create, Select Options like this : (1,2,3)
                                 1 ) PayStub 
@@ -98,7 +100,7 @@ def options_feature(name, employee_address, row_i):
             )
             int_numbers = list(map(int, document_type.split(",")))
         else:
-            int_split = row_i['doc_options'].split(",")
+            int_split = row_i["doc_options"].split(",")
             int_numbers = list(map(int, int_split))
         for number in int_numbers:
             if number == 1:
@@ -111,7 +113,7 @@ def options_feature(name, employee_address, row_i):
                 )
                 if str(slection_number) == "a":
                     pay_sub_object = PayStubs()
-                    pay_sub_object.paystub_wrapper(name, employee_address)
+                    pay_sub_object.paystub_wrapper(name, employee_address, row_i)
                 elif str(slection_number) == "b":
                     child_obj = PayStubChild()
                     child_obj.paystub_child_wrapper(name, employee_address)
@@ -511,33 +513,131 @@ class PayStubs:
             print("Error in Removing File.")
         return
 
-    def paystub_wrapper(self, name, employee_address):
-        print(
-            "************************************************************************************"
-        )
-        print(
-            "********************** We are Doing Paystub Document *******************************"
-        )
-        print(
-            "************************************************************************************"
-        )
-        rate = float(input("Please enter the rate which you decided: "))
-        print("***************************")
-        print("***************************")
-        account_number = input("Last digits of bank account number XXXX : Yes or No :")
-        if account_number.lower() == "yes":
-            account_number = randrange(1000, 9999)
+    def making_start_end_date(self, input_date):
+        # convert input string to datetime object
+        date_obj = datetime.strptime(input_date, "%b %d %Y")
+
+        # calculate start and end dates based on input date
+        last_day = datetime(date_obj.year, date_obj.month, 1) + timedelta(days=31)
+        if last_day.month != date_obj.month:
+            end_day = last_day - timedelta(days=last_day.day - 15)
         else:
-            account_number = input("Please Enter 4 digit Account Number : ")
-        number_of_pay_stubs = input(
-            "Please enter, how many number of paystubs you want to create: "
+            end_day = datetime(date_obj.year, date_obj.month, 15)
+
+        if date_obj.day > 15:
+            start_day = datetime(date_obj.year, date_obj.month, 16)
+            next_month = date_obj.replace(day=28) + timedelta(days=4)
+            if next_month.month != date_obj.month:
+                end_day = datetime(next_month.year, next_month.month, 1) - timedelta(
+                    days=1
+                )
+        else:
+            start_day = datetime(date_obj.year, date_obj.month, 1)
+            end_day = datetime(date_obj.year, date_obj.month, 15)
+            if start_day.weekday() >= 4:
+                end_day = datetime(date_obj.year, date_obj.month, 15)
+
+        # format dates as strings in desired format
+        # start_str = start_day.strftime("%Y-%m-%d")
+        end_str = end_day.strftime("%b %d %Y")
+
+        return f"{end_str}"
+
+    def find_business_day(self, start_date, gap):
+        import calendar
+
+        # start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+        start_date = datetime.strptime(start_date, "%b %d %Y").date()
+
+        target_date = start_date + timedelta(days=gap)
+
+        while True:
+            if target_date.weekday() < 5 and not calendar.isleap(target_date.year):
+                break
+            target_date += timedelta(days=1)  # Increment the target_date by one day
+
+        return str(start_date), str(target_date)
+
+    def generate_period_date_list(self, start_date, num_dates):
+        date_list = []
+        current_date = start_date
+
+        for _ in range(num_dates):
+            res = self.making_start_end_date(current_date)
+            st_dt = datetime.strptime(res, "%b %d %Y").date()
+            final_date = st_dt + timedelta(days=2)
+            end_date_str = final_date.strftime("%b %d %Y")
+            current_date = end_date_str
+            # date_list.append(datetime.strptime(res, "%b %d %Y").strftime("%d/%m/%Y"))
+            date_list.append(res)
+
+        return date_list
+
+    def paystub_wrapper(self, name, employee_address, row_i):
+        print(
+            "************************************************************************************"
         )
+        print(
+            "********************** We are Doing Paystub A Document *******************************"
+        )
+        print(
+            "************************************************************************************"
+        )
+        # From here we are implementing the functionality of paystub parameteres To Excel.
+
+        if pd.isna(row_i["paystub_A_options"]):
+            excel_rate = ""
+            excel_account_number = ""
+            excel_no_f_paystubs = ""
+            excel_period_ending_date = ""
+        else:
+            paystub_excel_data = json.loads(row_i["paystub_A_options"])
+            excel_rate = paystub_excel_data["Rate"]
+            excel_account_number = paystub_excel_data["4_Digit_Account_Number"]
+            excel_no_f_paystubs = paystub_excel_data["Numbe of Paystubs"]
+            excel_period_ending_date = paystub_excel_data["Period"]
+
+        if excel_rate == "":
+            rate = float(input("Please enter the rate which you decided: "))
+        else:
+            rate = excel_rate
+        print("***************************")
+        print("***************************")
+        # account_number = input("Last digits of bank account number XXXX : Yes or No :")
+        # if account_number.lower() == "yes":
+        #     account_number = randrange(1000, 9999)
+        # else:
+        if excel_account_number == "":
+            account_number = input("Please Enter 4 digit Account Number : ")
+        else:
+            account_number = excel_account_number
+
+        if excel_no_f_paystubs == "":
+            number_of_pay_stubs = input(
+                "Please enter, how many number of paystubs you want to create: "
+            )
+        else:
+            number_of_pay_stubs = excel_no_f_paystubs
+
+        if excel_period_ending_date == "":
+            dates_lst = []
+        else:
+            dates_lst = self.generate_period_date_list(
+                excel_period_ending_date, excel_no_f_paystubs
+            )
+
         if int(number_of_pay_stubs) == 0:
             print("You have enterd 0. So i am not creating any paystub. Thanks")
             sys.exit()
         elif int(number_of_pay_stubs) > 0:
             for i in range(int(number_of_pay_stubs)):
-                period_ending_date = input("Please Enter Period for Paystub: ")
+                if dates_lst == [] or dates_lst == "":
+                    period_ending_date = input("Please Enter Period for Paystub: ")
+                else:
+                    period_ending_date, check_date = self.find_business_day(
+                        dates_lst[i], 2
+                    )
+
                 f_period_ending_date = self.parse_and_make_date(period_ending_date)
 
                 new_year_to_send = f_period_ending_date.split("/")[-1]
@@ -603,7 +703,12 @@ class PayStubs:
                 year_to_date_ei = self.EI_calculator_year_to_date(y_t_date_input)
                 year_to_date_cpp = self.CPP_Calculator_year_to_date(y_t_date_input)
 
-                pay_date = input("Please enter pay date: ")
+                if check_date == "":
+                    pay_date = input("Please enter pay date: ")
+                else:
+                    pay_date = datetime.strptime(check_date, "%Y-%m-%d").strftime(
+                        "%d/%m/%Y"
+                    )
                 print("***************************")
                 print("***************************")
 
@@ -635,8 +740,7 @@ class PayStubs:
                     year_to_date_ei,
                     year_to_date_cpp,
                 )
-
-
+                
 #######################################################################################################################################
 #######################################################################################################################################
 #######################################################################################################################################
