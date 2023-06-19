@@ -66,7 +66,7 @@ def making_address(address):
 
 def making_folder(folder_name):
     current_directory = os.getcwd()
-    folder_path = f"{current_directory}\\Results\\{folder_name}"
+    folder_path = f"{current_directory}/Results/{folder_name}"
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
     return
@@ -100,7 +100,11 @@ def options_feature(name, employee_address, row_i):
             )
             int_numbers = list(map(int, document_type.split(",")))
         else:
-            int_split = row_i["doc_options"].split(",")
+            try:
+                int_split = row_i["doc_options"].split(",")
+            except: 
+                int_split = str(row_i["doc_options"]).split(",")
+
             int_numbers = list(map(int, int_split))
         for number in int_numbers:
             if number == 1:
@@ -116,10 +120,10 @@ def options_feature(name, employee_address, row_i):
                     pay_sub_object.paystub_wrapper(name, employee_address, row_i)
                 elif str(slection_number) == "b":
                     child_obj = PayStubChild()
-                    child_obj.paystub_child_wrapper(name, employee_address)
+                    child_obj.paystub_child_wrapper(name, employee_address, row_i)
                 elif str(slection_number) == "c":
                     pay_stub_three_obj = PayStubChildONE()
-                    pay_stub_three_obj.paystub_child_wrapper(name, employee_address)
+                    pay_stub_three_obj.paystub_child_wrapper(name, employee_address, row_i)
             elif number == 2:
                 sin_object = Proof_Of_SIN()
                 sin_object.SIN_Wrapper(name, employee_address)
@@ -147,10 +151,9 @@ def options_feature(name, employee_address, row_i):
                 )
                 td_clas.TD_wrapper(name, employee_address)
 
-    if int(selected_option) == 2:
+    elif int(selected_option) == 2:
         import sys
-
-        print("Thanks for using this. GoodBye")
+        print("You don't want to use it. Thanks GoodBye")
         sys.exit()
 
 
@@ -592,7 +595,7 @@ class PayStubs:
             excel_period_ending_date = ""
         else:
             paystub_excel_data = json.loads(row_i["paystub_A_options"])
-            excel_rate = paystub_excel_data["Rate"]
+            excel_rate = float(paystub_excel_data["Rate"])
             excel_account_number = paystub_excel_data["4_Digit_Account_Number"]
             excel_no_f_paystubs = paystub_excel_data["Numbe of Paystubs"]
             excel_period_ending_date = paystub_excel_data["Period"]
@@ -740,7 +743,8 @@ class PayStubs:
                     year_to_date_ei,
                     year_to_date_cpp,
                 )
-                
+
+
 #######################################################################################################################################
 #######################################################################################################################################
 #######################################################################################################################################
@@ -1910,6 +1914,7 @@ class TD_Document:
 
 
 class PayStubChild(PayStubs):
+
     def date_range(self, input_date):
         # convert input string to datetime object
         date_obj = datetime.strptime(input_date, "%b %d %Y")
@@ -2019,7 +2024,7 @@ class PayStubChild(PayStubs):
             print("Error in Removing File.")
         return
 
-    def paystub_child_wrapper(self, e_name, e_address):
+    def paystub_child_wrapper(self, e_name, e_address, row_i):
         print(
             "************************************************************************************"
         )
@@ -2029,34 +2034,77 @@ class PayStubChild(PayStubs):
         print(
             "************************************************************************************"
         )
+        if pd.isna(row_i["paystub_B_options"]):
+            excel_rate = ""
+            excel_occupation = ""
+            excel_no_f_paystubs = ""
+            excel_period_ending_date = ""
+        else:
+            paystub_excel_data = json.loads(row_i["paystub_B_options"])
+            excel_rate = float(paystub_excel_data["Rate"])
+            excel_occupation = paystub_excel_data["occupation"]
+            excel_no_f_paystubs = paystub_excel_data["Numbe of Paystubs"]
+            excel_period_ending_date = paystub_excel_data["Period"]
 
-        rate_per_hour = int(input("Please Enter Rate per Hour : "))
-        print("*" * 100)
-        print("*" * 100)
+        if excel_rate == "":
+            rate_per_hour = int(input("Please Enter Rate per Hour : "))
+            print("*" * 100)
+            print("*" * 100)
+        else:
+            rate_per_hour = excel_rate
 
-        occupation = input("Please Enter Occupation : ")
-        print("*" * 100)
-        print("*" * 100)
+        if excel_occupation == "":
+            occupation = input("Please Enter Occupation : ")
+            print("*" * 100)
+            print("*" * 100)
+        else:
+            occupation = excel_occupation
 
-        number_of_pay_stubs = input(
-            "Please enter, how many number of paystubs you want to create: "
-        )
+        if excel_no_f_paystubs == "":
+            number_of_pay_stubs = input(
+                "Please enter, how many number of paystubs you want to create: "
+            )
+        else:
+            number_of_pay_stubs = excel_no_f_paystubs
+
+        if excel_period_ending_date == "":
+            dates_lst = []
+        else:
+            dates_lst = self.generate_period_date_list(
+                excel_period_ending_date, excel_no_f_paystubs
+            )
+            
+
         if int(number_of_pay_stubs) == 0:
             print("You have enterd 0. So i am not creating any paystub. Thanks")
             sys.exit()
         elif int(number_of_pay_stubs) > 0:
             for paystub_number in range(int(number_of_pay_stubs)):
-                pay_period = input("Please enter date for Pay Period (Mar 01 2023) : ")
-                print("*" * 100)
-                print("*" * 100)
-                cheque_date = input("Please Enter Cheque date (Feb 11 2023): ")
-                print("*" * 100)
-                print("*" * 100)
+                if dates_lst == [] or dates_lst == "":
+                    pay_period = input("Please enter date for Pay Period (Mar 01 2023) : ")
+                    print("*" * 100)
+                    print("*" * 100)
+                else:
+                    def setting_date(date):
+                        #  Here in this function we change the format of 2022-04-15 to Mar 01 2023.
+                        return datetime.strptime(date, "%Y-%m-%d").strftime("%b %d, %Y").replace(",", "")
+                    pay_period, check_date = self.find_business_day(
+                        dates_lst[paystub_number], 2
+                    )
+                    pay_period = setting_date(pay_period)
+                    check_date = setting_date(check_date)
+                if check_date == "":
+                    cheque_date = input("Please Enter Cheque date (Feb 11 2023): ")
+                    print("*" * 100)
+                    print("*" * 100)
+                else:
+                    cheque_date = check_date
                 number_of_hours = int(input("Please Enter Number of Hours : "))
                 print("*" * 100)
                 print("*" * 100)
-
                 new_year_to_send = pay_period.split(" ")[-1]
+                if new_year_to_send == pay_period:
+                    new_year_to_send = pay_period.split("-")[0]
                 important_values_for_paystub = values_for_paystub(new_year_to_send)
 
                 global federal_first
@@ -2307,7 +2355,7 @@ class PayStubChildONE(PayStubs):
             print("Error in Removing File.")
         return
 
-    def paystub_child_wrapper(self, e_name, e_address):
+    def paystub_child_wrapper(self, e_name, e_address, row_i):
         print(
             "************************************************************************************"
         )
@@ -2317,14 +2365,37 @@ class PayStubChildONE(PayStubs):
         print(
             "************************************************************************************"
         )
+        if pd.isna(row_i["paystub_A_options"]):
+            excel_rate = ""
+            excel_no_f_paystubs = ""
+            excel_period_ending_date = ""
+        else:
+            paystub_excel_data = json.loads(row_i["paystub_A_options"])
+            excel_rate = float(paystub_excel_data["Rate"])
+            excel_no_f_paystubs = paystub_excel_data["Numbe of Paystubs"]
+            excel_period_ending_date = paystub_excel_data["Period"]
 
-        rate_per_hour = int(input("Please Enter Rate per Hour : "))
-        print("*" * 100)
-        print("*" * 100)
+        if excel_rate == "":
+            rate_per_hour = int(input("Please Enter Rate per Hour : "))
+            print("*" * 100)
+            print("*" * 100)
+        else:
+            rate_per_hour = excel_rate
 
-        number_of_pay_stubs = input(
-            "Please enter, how many number of paystubs you want to create: "
-        )
+        if excel_no_f_paystubs == "":
+            number_of_pay_stubs = input(
+                "Please enter, how many number of paystubs you want to create: "
+            )
+        else:
+            number_of_pay_stubs = excel_no_f_paystubs
+        
+        if excel_period_ending_date == "":
+            dates_lst = []
+        else:
+            dates_lst = self.generate_period_date_list(
+                excel_period_ending_date, excel_no_f_paystubs
+            )
+
         if int(number_of_pay_stubs) == 0:
             print("You have enterd 0. So i am not creating any paystub. Thanks")
             sys.exit()
@@ -2333,17 +2404,33 @@ class PayStubChildONE(PayStubs):
                 # occupation = input("Please Enter Occupation : ")
                 # print("*" * 100)
                 # print("*" * 100)
-                pay_period = input("Please enter date for Pay Period (Mar 01 2023) : ")
-                print("*" * 100)
-                print("*" * 100)
-                cheque_date = input("Please Enter Cheque date (Feb 11 2023): ")
-                print("*" * 100)
-                print("*" * 100)
+                if dates_lst == [] or dates_lst == "":
+                    pay_period = input("Please enter date for Pay Period (Mar 01 2023) : ")
+                    print("*" * 100)
+                    print("*" * 100)
+                else:
+                    def setting_date(date):
+                        #  Here in this function we change the format of 2022-04-15 to Mar 01 2023.
+                        return datetime.strptime(date, "%Y-%m-%d").strftime("%b %d, %Y").replace(",", "")
+                    pay_period, check_date = self.find_business_day(
+                        dates_lst[paystub_number], 2
+                    )
+                    pay_period = setting_date(pay_period)
+                    check_date = setting_date(check_date)
+                if check_date == "":
+                    cheque_date = input("Please Enter Cheque date (Feb 11 2023): ")
+                    print("*" * 100)
+                    print("*" * 100)
+                else:
+                    cheque_date = check_date
+
                 number_of_hours = int(input("Please Enter Number of Hours : "))
                 print("*" * 100)
                 print("*" * 100)
 
                 new_year_to_send = pay_period.split(" ")[-1]
+                if new_year_to_send == pay_period:
+                    new_year_to_send = pay_period.split("-")[0]
                 important_values_for_paystub = values_for_paystub(new_year_to_send)
 
                 global federal_first
